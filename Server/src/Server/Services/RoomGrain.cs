@@ -30,6 +30,7 @@ namespace Server.Services
         }
         async ValueTask<bool> IRoomGrain.ChatAsync(string playerName, string message)
         {
+            string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
             var player = _playerInfos.FirstOrDefault(t => t.Name == playerName);
             for (int i = 0; i < _playerInfos.Count; ++i)
             {
@@ -39,13 +40,14 @@ namespace Server.Services
                     continue;
                 }
                 await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
-                    .OnChat(player: player.Name, room: this.GrainReference.GrainIdentity.PrimaryKeyString, message: message);
+                    .OnChat(player: player.Name, room: roomName, message: message);
             }
             return true;
         }
 
         async ValueTask IRoomGrain.LeaveAsync(string player)
         {
+            string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
             var leaver = _playerInfos.FirstOrDefault(t => t.Name == player);
             if(leaver != null)
             {
@@ -54,7 +56,7 @@ namespace Server.Services
                 {
                     var playerInfo = _playerInfos[i];
                     await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
-                        .OnLeave(player: leaver.Name, room: this.GrainReference.GrainIdentity.PrimaryKeyString);
+                        .OnLeave(player: leaver.Name, room: roomName);
                 }
             }
         }
@@ -65,12 +67,13 @@ namespace Server.Services
             {
                 return (false,null);
             }
+            string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
             List<string> players = new();
             for (int i=0;i<_playerInfos.Count;++i)
             {
                 var playerInfo = _playerInfos[i];
                 await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
-                    .OnJoin(player: name, room: this.GrainReference.GrainIdentity.PrimaryKeyString);
+                    .OnJoin(player: name, room: roomName);
                 players.Add(playerInfo.Name);
             }
             _playerInfos.Add(new (name));
