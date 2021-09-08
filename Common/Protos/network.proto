@@ -9,6 +9,8 @@ package playerNetwork;
 
 service PlayerNetwork {
   rpc GetAuth(AuthRequest) returns (UUID);
+  rpc GetPlayerData(google.protobuf.Empty) returns (PlayerData);
+  rpc AddPoint(AddPointRequest) returns(AddPointResponse);
   rpc GetAsyncStreams (google.protobuf.Empty) returns (stream GrpcStreamResponse);
   rpc Join(JoinRequest) returns (JoinResponse);
   rpc Chat(ChatRequest) returns (ChatResponse);
@@ -35,6 +37,14 @@ message RoomList{
 
 message AuthRequest{
   string name = 1;
+}
+
+message AddPointRequest{
+  int32 addPoint = 1;
+}
+
+message AddPointResponse{
+  int32 addedPoint = 1;
 }
 
 message ChatRequest{

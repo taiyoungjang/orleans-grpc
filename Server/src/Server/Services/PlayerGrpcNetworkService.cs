@@ -77,15 +77,32 @@ namespace Server
             {
                 return Task.CompletedTask;
             }
-            async Task EndofAsyncStream()
+            async Task EndOfAsyncStream()
             {
-                await player.EndofAsyncStream();
+                await player.EndOfAsyncStream();
             }
             var stream = _clusterClient
                 .GetStreamProvider(PlayerGrain.s_streamProviderName)
                 .GetStream<GrpcStreamResponse>(guid, PlayerGrain.s_streamNamespace);
-            var streamObserver = new OrleansStreamObserver(guid, responseStreamWriter, stream, EndofAsyncStream, context.CancellationToken);
+            var streamObserver = new OrleansStreamObserver(guid, responseStreamWriter, stream, EndOfAsyncStream, context.CancellationToken);
             return streamObserver.WaitConsumerTask();
+        }
+
+        public override Task<PlayerData> GetPlayerData(Empty request, ServerCallContext context)
+        {
+            if (!GetPlayer(context, out var player))
+            {
+                throw new System.Exception();
+            }
+            return player.GetPlayerData().AsTask();
+        }
+        async public override Task<AddPointResponse> AddPoint(AddPointRequest request, ServerCallContext context)
+        {
+            if (!GetPlayer(context, out var player))
+            {
+                throw new System.Exception();
+            }
+            return new() { AddedPoint = await player.AddPoint(request.AddPoint) };
         }
 
         async public override Task<ChatResponse> Chat(ChatRequest request, ServerCallContext context)

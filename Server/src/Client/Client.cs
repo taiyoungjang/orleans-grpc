@@ -48,6 +48,12 @@ namespace Client
         async private Task CallRpcTask()
         {
             await Task.Delay(TimeSpan.FromSeconds(1));
+            var getPlayerData = await _playerNetworkClient.GetPlayerDataAsync(s_empty,_callOptions);
+            System.Console.WriteLine($"GetPlayerDataAsync: point:{getPlayerData.Point}");
+            var addPoint = new System.Random().Next(1, 100);
+            var addPointAsync = await _playerNetworkClient.AddPointAsync(new() { AddPoint = addPoint }, _callOptions);
+            System.Console.WriteLine($"AddPointAsync: addPoint:{addPoint} AddedPoint:{addPointAsync.AddedPoint}");
+
             var availableRoomResult = await _playerNetworkClient.GetAvailableRoomListAsync(s_empty, _callOptions);
             System.Console.WriteLine($"GetAvailableRoomListAsync: {string.Join(',', availableRoomResult.Rooms.Select(t => t.Name))}");
             string roomName = availableRoomResult.Rooms.Select(t=>t.Name).FirstOrDefault();

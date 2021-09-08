@@ -35,17 +35,13 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     {
         return base.OnDeactivateAsync();
     }
-    async ValueTask IPlayerGrain.EndofAsyncStream()
-    {
-        for (int i = 0; i < _joinedRoomList.Count; ++i)
-        {
-            var room = GrainFactory.GetGrain<IRoomGrain>(_joinedRoomList[i].Name);
-            await room.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
-        }
-        _joinedRoomList.Clear();
-    }
+
     async ValueTask<Guid> IPlayerGrain.SetStreamAsync()
     {
+        if(_streamToGrpc != null && this is IPlayerGrain playerGrain)
+        {
+            await playerGrain.EndOfAsyncStream();
+        }
         if(string.IsNullOrEmpty(_state.State.Name))
         {
             _state.State.Name = this.GrainReference.GrainIdentity.PrimaryKeyString;
@@ -56,6 +52,16 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         _streamToGrpc = streamProvider.GetStream<game.GrpcStreamResponse>(guid, s_streamNamespace);
         return guid;
     }
+    async ValueTask IPlayerGrain.EndOfAsyncStream()
+    {
+        for (int i = 0; i < _joinedRoomList.Count; ++i)
+        {
+            var room = GrainFactory.GetGrain<IRoomGrain>(_joinedRoomList[i].Name);
+            await room.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
+        }
+        _joinedRoomList.Clear();
+        _streamToGrpc = null;
+    }
 
     async ValueTask<bool> IPlayerGrain.ChatFromClient(string room, string message)
     {
@@ -64,16 +70,19 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     }
     async ValueTask IPlayerGrain.OnChat(string player, string room, string message)
     {
-        GrpcStreamResponse grpcStreamResponse = new()
+        if(_streamToGrpc != null)
         {
-            OnChat = new()
+            GrpcStreamResponse grpcStreamResponse = new()
             {
-                RoomInfo = room,
-                OtherPlayer = player,
-                Message = message
-            }
-        };
-        await _streamToGrpc.OnNextAsync(grpcStreamResponse);
+                OnChat = new()
+                {
+                    RoomInfo = room,
+                    OtherPlayer = player,
+                    Message = message
+                }
+            };
+            await _streamToGrpc.OnNextAsync(grpcStreamResponse);
+        }
     }
 
     async ValueTask<(bool ret, List<string> players)> IPlayerGrain.JoinFromClient(string room)
@@ -90,15 +99,18 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
 
     async ValueTask IPlayerGrain.OnJoin(string player, string room)
     {
-        GrpcStreamResponse grpcStreamResponse = new()
+        if(_streamToGrpc != null)
         {
-            OnJoin = new()
+            GrpcStreamResponse grpcStreamResponse = new()
             {
-                OtherPlayer = player,
-                RoomInfo = room
-            }
-        };
-        await _streamToGrpc.OnNextAsync(grpcStreamResponse);
+                OnJoin = new()
+                {
+                    OtherPlayer = player,
+                    RoomInfo = room
+                }
+            };
+            await _streamToGrpc.OnNextAsync(grpcStreamResponse);
+        }
     }
 
     ValueTask<ImmutableList<game.Room>> IPlayerGrain.GetJoinedRoomList()
@@ -108,14 +120,29 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
 
     async ValueTask IPlayerGrain.OnLeave(string player, string room)
     {
-        GrpcStreamResponse grpcStreamResponse = new()
+        if(_streamToGrpc!=null)
         {
-            OnLeave = new()
+            GrpcStreamResponse grpcStreamResponse = new()
             {
-                OtherPlayer = player,
-                RoomInfo = room
-            }
-        };
-        await _streamToGrpc.OnNextAsync(grpcStreamResponse);
+                OnLeave = new()
+                {
+                    OtherPlayer = player,
+                    RoomInfo = room
+                }
+            };
+            await _streamToGrpc.OnNextAsync(grpcStreamResponse);
+        }
+    }
+
+    ValueTask<PlayerData> IPlayerGrain.GetPlayerData()
+    {
+        return ValueTask.FromResult<PlayerData>( new() { Name = this.GrainReference.GrainIdentity.PrimaryKeyString, Point = _state.State.Point });
+    }
+
+    async ValueTask<int> IPlayerGrain.AddPoint(int point)
+    {
+        _state.State.Point += point;
+        await _state.WriteStateAsync();
+        return _state.State.Point;
     }
 }
