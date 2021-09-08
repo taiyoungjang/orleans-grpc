@@ -1,0 +1,71 @@
+
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "game";
+
+package playerNetwork;
+
+service PlayerNetwork {
+  rpc GetAuth(AuthRequest) returns (UUID);
+  rpc GetAsyncStreams (google.protobuf.Empty) returns (stream GrpcStreamResponse);
+  rpc Join(JoinRequest) returns (JoinResponse);
+  rpc Chat(ChatRequest) returns (ChatResponse);
+  rpc GetAvailableRoomList(google.protobuf.Empty) returns (RoomList);
+  rpc GetJoinedRoomList(google.protobuf.Empty) returns (RoomList);
+}
+
+message UUID{
+  bytes value = 1;
+}
+
+message Room{
+  string name = 1;
+}
+
+message RoomList{
+  repeated Room rooms = 1;
+}
+
+message AuthRequest{
+  string name = 1;
+}
+
+message ChatRequest{
+  string room = 1;
+  string message = 2;
+}
+message ChatResponse{
+  bool success = 1;
+}
+message JoinRequest{
+  string room = 1;
+}
+message JoinResponse{
+  bool success = 1;
+  repeated string players = 2;
+}
+
+
+message GrpcStreamResponse {
+  message OnChat{
+    string roomInfo = 1;
+    string otherPlayer = 2;
+    string message = 3;
+  }
+  message OnJoin{
+    string roomInfo = 1;
+    string otherPlayer = 2;
+  }
+  message OnLeave{
+    string roomInfo = 1;
+    string otherPlayer = 2;
+  }
+  oneof action {
+    OnJoin onJoin = 1;
+    OnLeave onLeave = 2;
+    OnChat onChat = 3;
+  }
+}
+
