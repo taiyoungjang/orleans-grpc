@@ -22,8 +22,8 @@ namespace game
             using var channel = GrpcChannel.ForAddress("http://localhost:5000");
             var playerNetworkClient = new game.PlayerNetwork.PlayerNetworkClient(channel);
             var client = new Client.Client(playerNetworkClient, playerName);
-            _ = Task.Run( () => client.ListenTask() );
-            await Task.Delay(TimeSpan.FromMinutes(10));
+            await client.TestTask();
+            await Task.Delay(TimeSpan.FromSeconds(5));
         }
 
     }

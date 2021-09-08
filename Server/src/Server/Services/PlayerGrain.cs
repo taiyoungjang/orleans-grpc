@@ -40,6 +40,14 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     {
         if(_streamToGrpc != null && this is IPlayerGrain playerGrain)
         {
+            GrpcStreamResponse grpcStreamResponse = new()
+            {
+                OnClosed = new()
+                {
+                    Reason = "Duplicated"
+                }
+            };
+            await _streamToGrpc.OnNextAsync(grpcStreamResponse);
             await playerGrain.EndOfAsyncStream();
         }
         if(string.IsNullOrEmpty(_state.State.Name))

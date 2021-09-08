@@ -18,7 +18,7 @@ namespace Client
             _playerNetworkClient = playerNetworkClient;
             _name = name;
         }
-        async public Task ListenTask()
+        async public Task TestTask()
         {
             var uuid = await _playerNetworkClient.GetAuthAsync( new AuthRequest() { Name = _name });
             System.Console.WriteLine($"player:{_name} uuid:{new Guid(uuid.Value.ToByteArray())}");
@@ -42,8 +42,12 @@ namespace Client
                     case GrpcStreamResponse.ActionOneofCase.OnLeave:
                         System.Console.WriteLine($"OnLeave Room:{current.OnLeave.RoomInfo} player:{current.OnLeave.OtherPlayer}");
                         break;
+                    case GrpcStreamResponse.ActionOneofCase.OnClosed:
+                        System.Console.WriteLine($"OnClosed Reason:{current.OnClosed.Reason} ");
+                        break;
                 }
             }
+            System.Console.WriteLine($"done.");
         }
         async private Task CallRpcTask()
         {

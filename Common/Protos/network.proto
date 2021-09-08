@@ -77,10 +77,14 @@ message GrpcStreamResponse {
     string roomInfo = 1;
     string otherPlayer = 2;
   }
+  message OnClosed{
+    string reason = 1;
+  }
   oneof action {
     OnJoin onJoin = 1;
     OnLeave onLeave = 2;
     OnChat onChat = 3;
+    OnClosed onClosed = 4;
   }
 }
 

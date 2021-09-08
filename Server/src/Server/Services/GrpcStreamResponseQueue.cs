@@ -74,6 +74,12 @@ public class GrpcStreamResponseQueue
             await foreach (var message in _channel.Reader.ReadAllAsync(cancellationToken))
             {
                 await _streamWriter.WriteAsync(message);
+                if(message.ActionCase == game.GrpcStreamResponse.ActionOneofCase.OnClosed)
+                {
+                    //twice call
+                    _disconnectAction = null;
+                    _ =  CompleteAsync();
+                }
             }
         }
         catch(System.Exception)

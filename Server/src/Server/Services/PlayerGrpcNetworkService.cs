@@ -66,16 +66,16 @@ namespace Server
             return true;
         }
 
-        public override Task GetAsyncStreams(global::Google.Protobuf.WellKnownTypes.Empty empty, IServerStreamWriter<GrpcStreamResponse> responseStreamWriter, ServerCallContext context)
+        async public override Task GetAsyncStreams(global::Google.Protobuf.WellKnownTypes.Empty empty, IServerStreamWriter<GrpcStreamResponse> responseStreamWriter, ServerCallContext context)
         {
             Guid guid = GetAuthorization(context);
             if(guid.Equals(Guid.Empty))
             {
-                return Task.CompletedTask;
+                return;
             }
             if (!GetPlayer(context, out var player))
             {
-                return Task.CompletedTask;
+                return;
             }
             async Task EndOfAsyncStream()
             {
@@ -85,7 +85,7 @@ namespace Server
                 .GetStreamProvider(PlayerGrain.s_streamProviderName)
                 .GetStream<GrpcStreamResponse>(guid, PlayerGrain.s_streamNamespace);
             var streamObserver = new OrleansStreamObserver(guid, responseStreamWriter, stream, EndOfAsyncStream, context.CancellationToken);
-            return streamObserver.WaitConsumerTask();
+            await streamObserver.WaitConsumerTask();
         }
 
         public override Task<PlayerData> GetPlayerData(Empty request, ServerCallContext context)
