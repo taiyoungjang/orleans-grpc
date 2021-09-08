@@ -22,18 +22,18 @@ namespace Server
         }
         async public override Task<UUID> GetAuth(AuthRequest request, ServerCallContext context)
         {
-            Guid guid = Guid.NewGuid();
-            UUID ret = new() { Value = Google.Protobuf.ByteString.CopyFrom(guid.ToByteArray()) };
+            Guid guid;
             try
             {
-                var player = _clusterClient.GetGrain<IPlayerGrain>(guid);
-                await player.SetNameAsync(request.Name);
+                var player = _clusterClient.GetGrain<IPlayerGrain>(request.Name);
+                guid = await player.SetStreamAsync();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 throw;
             }
+            UUID ret = new() { Value = Google.Protobuf.ByteString.CopyFrom(guid.ToByteArray()) };
             return ret;
         }
         private Guid GetAuthorization(ServerCallContext context)
@@ -45,15 +45,24 @@ namespace Server
             }
             return new Guid(metaData.ValueBytes);
         }
+        private string GetContextName(ServerCallContext context)
+        {
+            var metaData = context.RequestHeaders.Get("name");
+            if (metaData == null)
+            {
+                return string.Empty;
+            }
+            return metaData.Value;
+        }
         private bool GetPlayer(ServerCallContext context, out IPlayerGrain outPlayer)
         {
-            var guid = GetAuthorization(context);
-            if (guid.Equals(Guid.Empty))
+            var name = GetContextName(context);
+            if (string.IsNullOrEmpty(name))
             {
                 outPlayer = null;
                 return false;
             }
-            outPlayer = _clusterClient.GetGrain<IPlayerGrain>(guid);
+            outPlayer = _clusterClient.GetGrain<IPlayerGrain>(name);
             return true;
         }
 

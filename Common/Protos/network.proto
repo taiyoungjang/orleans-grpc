@@ -20,6 +20,11 @@ message UUID{
   bytes value = 1;
 }
 
+message PlayerData{
+    string name = 1;
+    int32 point = 2;
+}
+
 message Room{
   string name = 1;
 }

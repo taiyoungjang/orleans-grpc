@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
 using Orleans;
-public interface IPlayerGrain : IGrainWithGuidKey
+public interface IPlayerGrain : IGrainWithStringKey
 {
     ValueTask EndofAsyncStream();
-    ValueTask SetNameAsync(string name);
+    ValueTask<Guid> SetStreamAsync();
 
     ValueTask<bool> ChatFromClient(string room, string message);
     ValueTask OnChat(string player, string room, string message);

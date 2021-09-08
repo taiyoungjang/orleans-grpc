@@ -7,8 +7,8 @@ using System.Collections.Immutable;
 using Orleans;
 public interface IRoomGrain : IGrainWithStringKey
 {
-    ValueTask LeaveAsync(Guid playerGuid);
-    ValueTask<bool> ChatAsync(Guid playerGuid, string message);
-    ValueTask<(bool ret, List<string> players)> JoinAsync(Guid playerGuid, string name);
+    ValueTask LeaveAsync(string player);
+    ValueTask<bool> ChatAsync(string player, string message);
+    ValueTask<(bool ret, List<string> players)> JoinAsync(string player, string name);
 
 }

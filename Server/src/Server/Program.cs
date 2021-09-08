@@ -37,6 +37,9 @@ namespace Server
                     {
                         options.FireAndForgetDelivery = true;
                     });
+                    var redisAddress = $"{Environment.GetEnvironmentVariable("REDIS")}:6379";
+                    siloBuilder.AddRedisGrainStorage("player", options => options.ConnectionString = redisAddress);
+
                     //siloBuilder.ConfigureServices(x => x.AddSingleton<IExternalSerializer, ProtobufSerializer>());
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

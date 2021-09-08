@@ -28,9 +28,9 @@ namespace Server.Services
             await roomManager.DestroyAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
             await base.OnDeactivateAsync();
         }
-        async ValueTask<bool> IRoomGrain.ChatAsync(Guid playerGuid, string message)
+        async ValueTask<bool> IRoomGrain.ChatAsync(string playerName, string message)
         {
-            var player = _playerInfos.FirstOrDefault(t => t.PlayerGuid == playerGuid);
+            var player = _playerInfos.FirstOrDefault(t => t.Name == playerName);
             for (int i = 0; i < _playerInfos.Count; ++i)
             {
                 var playerInfo = _playerInfos[i];
@@ -38,30 +38,30 @@ namespace Server.Services
                 {
                     continue;
                 }
-                await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.PlayerGuid)
+                await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
                     .OnChat(player: player.Name, room: this.GrainReference.GrainIdentity.PrimaryKeyString, message: message);
             }
             return true;
         }
 
-        async ValueTask IRoomGrain.LeaveAsync(Guid playerGuid)
+        async ValueTask IRoomGrain.LeaveAsync(string player)
         {
-            var leaver = _playerInfos.FirstOrDefault(t => t.PlayerGuid == playerGuid);
+            var leaver = _playerInfos.FirstOrDefault(t => t.Name == player);
             if(leaver != null)
             {
-                _playerInfos.RemoveAll(t => t.PlayerGuid == playerGuid);
+                _playerInfos.RemoveAll(t => t.Name == player);
                 for (int i = 0; i < _playerInfos.Count; ++i)
                 {
                     var playerInfo = _playerInfos[i];
-                    await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.PlayerGuid)
+                    await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
                         .OnLeave(player: leaver.Name, room: this.GrainReference.GrainIdentity.PrimaryKeyString);
                 }
             }
         }
 
-        async ValueTask<(bool ret, List<string> players)> IRoomGrain.JoinAsync(Guid playerGuid, string name)
+        async ValueTask<(bool ret, List<string> players)> IRoomGrain.JoinAsync(string player, string name)
         {
-            if (_playerInfos.Exists(t => t.PlayerGuid == playerGuid))
+            if (_playerInfos.Exists(t => t.Name == player))
             {
                 return (false,null);
             }
@@ -69,11 +69,11 @@ namespace Server.Services
             for (int i=0;i<_playerInfos.Count;++i)
             {
                 var playerInfo = _playerInfos[i];
-                await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.PlayerGuid)
+                await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
                     .OnJoin(player: name, room: this.GrainReference.GrainIdentity.PrimaryKeyString);
                 players.Add(playerInfo.Name);
             }
-            _playerInfos.Add(new (playerGuid, name));
+            _playerInfos.Add(new (name));
             return new(true,players);
         }
     }
