@@ -44,6 +44,7 @@ namespace Server
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.ConfigureKestrel(options => options.ListenAnyIP(5000));
                     webBuilder.UseStartup<Startup>();
                 });
     }

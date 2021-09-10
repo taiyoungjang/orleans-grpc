@@ -349,3 +349,9 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 /Server/Redis/dump.rdb
+/Client/Library
+/Client/Temp
+/Client/Assets/Plugins/Grpc/Grpc.Core/runtimes/android/arm64-v8a/libgrpc_csharp_ext.so
+/Client/Assets/Plugins/Grpc/Grpc.Core/runtimes/android/armeabi-v7a/libgrpc_csharp_ext.so
+/Client/Assets/Plugins/Grpc/Grpc.Core/runtimes/ios/libgrpc_csharp_ext.a
+/Client/Assets/Plugins/Grpc/Grpc.Core/runtimes/ios/libgrpc.a
