@@ -4,81 +4,92 @@ using System.Linq;
 using System.Threading.Tasks;
 using game;
 using Microsoft.Extensions.Logging;
+using Orleans.Streams;
 
-namespace Server.Services
+public class RoomGrain : Orleans.Grain, IRoomGrain
 {
-    public class RoomGrain : Orleans.Grain, IRoomGrain
+    public static string s_streamProviderName = "roomgrain";
+    public static string s_streamNamespace = "default";
+    private readonly ILogger<RoomGrain> _logger;
+    private List<PlayerInfo> _playerInfos;
+    private IAsyncStream<game.GrpcStreamResponse> _stream;
+    public RoomGrain(ILogger<RoomGrain> logger)
     {
-        private readonly ILogger<RoomGrain> _logger;
-        private List<PlayerInfo> _playerInfos;
-        public RoomGrain(ILogger<RoomGrain> logger)
+        _logger = logger;
+        _playerInfos = new();
+    }
+    async public override Task OnActivateAsync()
+    {
+        var roomManager = this.GrainFactory.GetGrain<IRoomManagerGrain>(0);
+        await roomManager.CreateAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
+        var streamProvider = GetStreamProvider(s_streamProviderName);
+        _stream = streamProvider.GetStream<game.GrpcStreamResponse>(Guid.NewGuid(), s_streamNamespace);
+        await base.OnActivateAsync();
+    }
+    async public override Task OnDeactivateAsync()
+    {
+        var roomManager = this.GrainFactory.GetGrain<IRoomManagerGrain>(0);
+        await roomManager.DestroyAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
+        await _stream.OnCompletedAsync();
+        await base.OnDeactivateAsync();
+    }
+    async ValueTask<bool> IRoomGrain.ChatAsync(string playerName, string message)
+    {
+        string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
+        GrpcStreamResponse grpcStreamResponse = new()
         {
-            _logger = logger;
-            _playerInfos = new();
-        }
-        async public override Task OnActivateAsync()
-        {
-            var roomManager = this.GrainFactory.GetGrain<IRoomManagerGrain>(0);
-            await roomManager.CreateAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
-            await base.OnActivateAsync();
-        }
-        async public override Task OnDeactivateAsync()
-        {
-            var roomManager = this.GrainFactory.GetGrain<IRoomManagerGrain>(0);
-            await roomManager.DestroyAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
-            await base.OnDeactivateAsync();
-        }
-        async ValueTask<bool> IRoomGrain.ChatAsync(string playerName, string message)
-        {
-            string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
-            var player = _playerInfos.FirstOrDefault(t => t.Name == playerName);
-            for (int i = 0; i < _playerInfos.Count; ++i)
+            OnChat = new()
             {
-                var playerInfo = _playerInfos[i];
-                if(player == playerInfo)
-                {
-                    continue;
-                }
-                await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
-                    .OnChat(player: player.Name, room: roomName, message: message);
+                RoomInfo = roomName,
+                OtherPlayer = playerName,
+                Message = message
             }
-            return true;
-        }
+        };
+        await _stream.OnNextAsync(grpcStreamResponse);
+        return true;
+    }
 
-        async ValueTask IRoomGrain.LeaveAsync(string player)
+    async ValueTask IRoomGrain.LeaveAsync(string player)
+    {
+        string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
+        var leaver = _playerInfos.FirstOrDefault(t => t.Name == player);
+        if (leaver != null)
         {
-            string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
-            var leaver = _playerInfos.FirstOrDefault(t => t.Name == player);
-            if(leaver != null)
+            _playerInfos.RemoveAll(t => t.Name == player);
+            GrpcStreamResponse grpcStreamResponse = new()
             {
-                _playerInfos.RemoveAll(t => t.Name == player);
-                for (int i = 0; i < _playerInfos.Count; ++i)
+                OnLeave = new()
                 {
-                    var playerInfo = _playerInfos[i];
-                    await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
-                        .OnLeave(player: leaver.Name, room: roomName);
+                    OtherPlayer = player,
+                    RoomInfo = roomName
                 }
-            }
-        }
-
-        async ValueTask<(bool ret, List<string> players)> IRoomGrain.JoinAsync(string player, string name)
-        {
-            if (_playerInfos.Exists(t => t.Name == player))
-            {
-                return (false,null);
-            }
-            string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
-            List<string> players = new();
-            for (int i=0;i<_playerInfos.Count;++i)
-            {
-                var playerInfo = _playerInfos[i];
-                await this.GrainFactory.GetGrain<IPlayerGrain>(playerInfo.Name)
-                    .OnJoin(player: name, room: roomName);
-                players.Add(playerInfo.Name);
-            }
-            _playerInfos.Add(new (name));
-            return new(true,players);
+            };
+            await _stream.OnNextAsync(grpcStreamResponse);
         }
     }
 
+    async ValueTask<(bool success, List<string> players, Guid streamGuid)> IRoomGrain.JoinAsync(string player, string name)
+    {
+        if (_playerInfos.Exists(t => t.Name == player))
+        {
+            return (false, null, Guid.Empty);
+        }
+
+        string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
+
+        List<string> players = _playerInfos.Select(t => t.Name).ToList();
+        _playerInfos.Add(new(name));
+
+        GrpcStreamResponse grpcStreamResponse = new()
+        {
+            OnJoin = new()
+            {
+                OtherPlayer = player,
+                RoomInfo = roomName
+            }
+        };
+        await _stream.OnNextAsync(grpcStreamResponse);
+        return new(true, players, _stream.Guid);
+    }
 }
+

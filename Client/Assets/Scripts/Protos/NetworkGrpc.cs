@@ -21,6 +21,8 @@ namespace game {
     static readonly grpc::Marshaller<global::game.GrpcStreamResponse> __Marshaller_playerNetwork_GrpcStreamResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.GrpcStreamResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.JoinRequest> __Marshaller_playerNetwork_JoinRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.JoinRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.JoinResponse> __Marshaller_playerNetwork_JoinResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.JoinResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::game.LeaveRequest> __Marshaller_playerNetwork_LeaveRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.LeaveRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::game.LeaveResponse> __Marshaller_playerNetwork_LeaveResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.LeaveResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.ChatRequest> __Marshaller_playerNetwork_ChatRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.ChatRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.ChatResponse> __Marshaller_playerNetwork_ChatResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.ChatResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.RoomList> __Marshaller_playerNetwork_RoomList = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.RoomList.Parser.ParseFrom);
@@ -59,6 +61,13 @@ namespace game {
         "Join",
         __Marshaller_playerNetwork_JoinRequest,
         __Marshaller_playerNetwork_JoinResponse);
+
+    static readonly grpc::Method<global::game.LeaveRequest, global::game.LeaveResponse> __Method_Leave = new grpc::Method<global::game.LeaveRequest, global::game.LeaveResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "Leave",
+        __Marshaller_playerNetwork_LeaveRequest,
+        __Marshaller_playerNetwork_LeaveResponse);
 
     static readonly grpc::Method<global::game.ChatRequest, global::game.ChatResponse> __Method_Chat = new grpc::Method<global::game.ChatRequest, global::game.ChatResponse>(
         grpc::MethodType.Unary,
@@ -181,6 +190,22 @@ namespace game {
       public virtual grpc::AsyncUnaryCall<global::game.JoinResponse> JoinAsync(global::game.JoinRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_Join, null, options, request);
+      }
+      public virtual global::game.LeaveResponse Leave(global::game.LeaveRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return Leave(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::game.LeaveResponse Leave(global::game.LeaveRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_Leave, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::game.LeaveResponse> LeaveAsync(global::game.LeaveRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return LeaveAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::game.LeaveResponse> LeaveAsync(global::game.LeaveRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_Leave, null, options, request);
       }
       public virtual global::game.ChatResponse Chat(global::game.ChatRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {

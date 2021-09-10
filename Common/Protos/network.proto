@@ -13,6 +13,7 @@ service PlayerNetwork {
   rpc AddPoint(AddPointRequest) returns(AddPointResponse);
   rpc GetAsyncStreams (google.protobuf.Empty) returns (stream GrpcStreamResponse);
   rpc Join(JoinRequest) returns (JoinResponse);
+  rpc Leave(LeaveRequest) returns (LeaveResponse);
   rpc Chat(ChatRequest) returns (ChatResponse);
   rpc GetAvailableRoomList(google.protobuf.Empty) returns (RoomList);
   rpc GetJoinedRoomList(google.protobuf.Empty) returns (RoomList);
@@ -60,6 +61,12 @@ message JoinRequest{
 message JoinResponse{
   bool success = 1;
   repeated string players = 2;
+}
+message LeaveRequest{
+  string room = 1;
+}
+message LeaveResponse{
+  bool success = 1;
 }
 
 

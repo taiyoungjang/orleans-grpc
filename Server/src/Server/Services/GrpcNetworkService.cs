@@ -10,12 +10,12 @@ using game;
 
 namespace Server
 {
-    public class PlayerGrpcNetworkService : game.PlayerNetwork.PlayerNetworkBase
+    public class GrpcNetworkService : game.PlayerNetwork.PlayerNetworkBase
     {
-        private readonly ILogger<PlayerGrpcNetworkService> _logger;
+        private readonly ILogger<GrpcNetworkService> _logger;
         private readonly Orleans.IClusterClient _clusterClient;
         private static game.RoomList s_emptyRoomList = new();
-        public PlayerGrpcNetworkService(Orleans.IClusterClient clusterClient, ILogger<PlayerGrpcNetworkService> logger)
+        public GrpcNetworkService(Orleans.IClusterClient clusterClient, ILogger<GrpcNetworkService> logger)
         {
             _clusterClient = clusterClient;
             _logger = logger;
@@ -79,7 +79,7 @@ namespace Server
             }
             async Task EndOfAsyncStream()
             {
-                await player.EndOfAsyncStream();
+                await player.EndOfAsyncStreamAsync();
             }
             var stream = _clusterClient
                 .GetStreamProvider(PlayerGrain.s_streamProviderName)
@@ -94,7 +94,7 @@ namespace Server
             {
                 throw new System.Exception();
             }
-            return player.GetPlayerData().AsTask();
+            return player.GetPlayerDataAsync().AsTask();
         }
         async public override Task<AddPointResponse> AddPoint(AddPointRequest request, ServerCallContext context)
         {
@@ -102,7 +102,7 @@ namespace Server
             {
                 throw new System.Exception();
             }
-            return new() { AddedPoint = await player.AddPoint(request.AddPoint) };
+            return new() { AddedPoint = await player.AddPointAsync(request.AddPoint) };
         }
 
         async public override Task<ChatResponse> Chat(ChatRequest request, ServerCallContext context)
@@ -111,7 +111,7 @@ namespace Server
             {
                 return new() {Success = false};
             }
-            var ret = await player.ChatFromClient(room: request.Room, message: request.Message);
+            var ret = await player.ChatAsync(room: request.Room, message: request.Message);
             return new() { Success = ret };
         }
         async public override Task<JoinResponse> Join(JoinRequest request, ServerCallContext context)
@@ -120,9 +120,19 @@ namespace Server
             {
                 return new() { Success = false };
             }
-            var joinRet = await player.JoinFromClient(room: request.Room);
+            var joinRet = await player.JoinAsync(room: request.Room);
             JoinResponse ret = new() { Success = joinRet.ret};
             ret.Players.AddRange(joinRet.players);
+            return ret;
+        }
+        async public override Task<LeaveResponse> Leave(LeaveRequest request, ServerCallContext context)
+        {
+            if (!GetPlayer(context, out var player))
+            {
+                return new() { Success = false };
+            }
+            var leaveRet = await player.LeaveAsync(room: request.Room);
+            LeaveResponse ret = new() { Success = leaveRet };
             return ret;
         }
         async public override Task<RoomList> GetAvailableRoomList(Empty request, ServerCallContext context)
@@ -139,7 +149,7 @@ namespace Server
                 return s_emptyRoomList;
             }
             RoomList roomList = new ();
-            roomList.Rooms.AddRange(await player.GetJoinedRoomList());
+            roomList.Rooms.AddRange(await player.GetJoinedRoomListAsync());
             return roomList; 
         }
     }

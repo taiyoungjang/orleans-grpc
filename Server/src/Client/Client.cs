@@ -75,6 +75,9 @@ namespace Client
 
             var result = await _playerNetworkClient.GetJoinedRoomListAsync(s_empty, _callOptions);
             System.Console.WriteLine($"GetJoinedRoomListAsync: {string.Join(',', result.Rooms.Select(t => t.Name))}");
+
+            var leave = await _playerNetworkClient.LeaveAsync(new() {Room = roomName }, _callOptions);
+            System.Console.WriteLine($"LeaveAsync: room:{roomName} {leave.Success}");
         }
     }
 }

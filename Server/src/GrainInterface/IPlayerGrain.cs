@@ -7,20 +7,18 @@ using System.Collections.Immutable;
 using Orleans;
 public interface IPlayerGrain : IGrainWithStringKey
 {
-    ValueTask EndOfAsyncStream();
+    ValueTask EndOfAsyncStreamAsync();
     ValueTask<Guid> SetStreamAsync();
 
-    ValueTask<int> AddPoint(int point);
+    ValueTask<int> AddPointAsync(int point);
 
-    ValueTask<bool> ChatFromClient(string room, string message);
-    ValueTask OnChat(string player, string room, string message);
+    ValueTask<bool> ChatAsync(string room, string message);
 
-    ValueTask<(bool ret, List<string> players)> JoinFromClient(string room);
-    ValueTask OnJoin(string player, string room);
-    ValueTask OnLeave(string player, string room);
+    ValueTask<(bool ret, List<string> players)> JoinAsync(string room);
+    ValueTask<bool> LeaveAsync(string room);
 
-    ValueTask<game.PlayerData> GetPlayerData();
+    ValueTask<game.PlayerData> GetPlayerDataAsync();
 
-    ValueTask<ImmutableList<game.Room>> GetJoinedRoomList();
+    ValueTask<ImmutableList<game.Room>> GetJoinedRoomListAsync();
 
 }

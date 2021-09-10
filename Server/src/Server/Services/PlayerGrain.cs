@@ -15,8 +15,9 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     private readonly ILogger<PlayerGrain> _logger;
     public static string s_streamProviderName = "playergrain";
     public static string s_streamNamespace = "default";
-    private Orleans.Streams.IAsyncStream<game.GrpcStreamResponse> _streamToGrpc;
 
+    private Orleans.Streams.IAsyncStream<game.GrpcStreamResponse> _streamToGrpc;
+    private Dictionary<string,StreamSubscriptionHandle<game.GrpcStreamResponse>> _roomStreamObservers;
     private List<Room> _joinedRoomList;
     private readonly IPersistentState<PlayerData> _state;
     public PlayerGrain(
@@ -29,6 +30,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     async public override Task OnActivateAsync()
     {
         _joinedRoomList = new();
+        _roomStreamObservers = new();
         await base.OnActivateAsync();
     }
     public override Task OnDeactivateAsync()
@@ -48,7 +50,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
                 }
             };
             await _streamToGrpc.OnNextAsync(grpcStreamResponse);
-            await playerGrain.EndOfAsyncStream();
+            await playerGrain.EndOfAsyncStreamAsync();
         }
         if(string.IsNullOrEmpty(_state.State.Name))
         {
@@ -60,97 +62,83 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         _streamToGrpc = streamProvider.GetStream<game.GrpcStreamResponse>(guid, s_streamNamespace);
         return guid;
     }
-    async ValueTask IPlayerGrain.EndOfAsyncStream()
+    async ValueTask IPlayerGrain.EndOfAsyncStreamAsync()
     {
         for (int i = 0; i < _joinedRoomList.Count; ++i)
         {
             var room = GrainFactory.GetGrain<IRoomGrain>(_joinedRoomList[i].Name);
             await room.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
         }
+        foreach(var pair in _roomStreamObservers)
+        {
+            try
+            {
+                await pair.Value.UnsubscribeAsync();
+            }
+            catch (Exception)
+            {
+
+            }
+        }
         _joinedRoomList.Clear();
+        _roomStreamObservers.Clear();
         _streamToGrpc = null;
     }
 
-    async ValueTask<bool> IPlayerGrain.ChatFromClient(string room, string message)
+    async ValueTask<bool> IPlayerGrain.ChatAsync(string room, string message)
     {
         var roomGrain = GrainFactory.GetGrain<IRoomGrain>(room);
         return await roomGrain.ChatAsync(this.GrainReference.GrainIdentity.PrimaryKeyString, message);
     }
-    async ValueTask IPlayerGrain.OnChat(string player, string room, string message)
-    {
-        if(_streamToGrpc != null)
-        {
-            GrpcStreamResponse grpcStreamResponse = new()
-            {
-                OnChat = new()
-                {
-                    RoomInfo = room,
-                    OtherPlayer = player,
-                    Message = message
-                }
-            };
-            await _streamToGrpc.OnNextAsync(grpcStreamResponse);
-        }
-    }
 
-    async ValueTask<(bool ret, List<string> players)> IPlayerGrain.JoinFromClient(string room)
+    async ValueTask<(bool ret, List<string> players)> IPlayerGrain.JoinAsync(string room)
     {
         var roomGrain = GrainFactory.GetGrain<IRoomGrain>(room);
         var joinRet = await roomGrain.JoinAsync(this.GrainReference.GrainIdentity.PrimaryKeyString, _state.State.Name);
-        if(joinRet.ret)
+        if(joinRet.success)
         {
+            var stream = this.GetStreamProvider(RoomGrain.s_streamProviderName)
+                .GetStream<GrpcStreamResponse>(joinRet.streamGuid, RoomGrain.s_streamNamespace);
+
+            var handle = await stream.SubscribeAsync(new RoomStreamObserver(room, this));
+            _roomStreamObservers.Add(room, handle);
+
             _joinedRoomList.Add(new() { Name = room });
             return (true, joinRet.players);
         }
         return (false,null);
     }
-
-    async ValueTask IPlayerGrain.OnJoin(string player, string room)
+    async ValueTask<bool> IPlayerGrain.LeaveAsync(string room)
     {
-        if(_streamToGrpc != null)
+        var roomGrain = GrainFactory.GetGrain<IRoomGrain>(room);
+        var leaveRet = roomGrain.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
         {
-            GrpcStreamResponse grpcStreamResponse = new()
+            if( _roomStreamObservers.TryGetValue(room, out var observer))
             {
-                OnJoin = new()
-                {
-                    OtherPlayer = player,
-                    RoomInfo = room
-                }
-            };
-            await _streamToGrpc.OnNextAsync(grpcStreamResponse);
+                await observer.UnsubscribeAsync();
+            }
         }
+        return true;
     }
-
-    ValueTask<ImmutableList<game.Room>> IPlayerGrain.GetJoinedRoomList()
+    ValueTask<ImmutableList<game.Room>> IPlayerGrain.GetJoinedRoomListAsync()
     {
         return ValueTask.FromResult(_joinedRoomList.ToImmutableList());
     }
 
-    async ValueTask IPlayerGrain.OnLeave(string player, string room)
-    {
-        if(_streamToGrpc!=null)
-        {
-            GrpcStreamResponse grpcStreamResponse = new()
-            {
-                OnLeave = new()
-                {
-                    OtherPlayer = player,
-                    RoomInfo = room
-                }
-            };
-            await _streamToGrpc.OnNextAsync(grpcStreamResponse);
-        }
-    }
-
-    ValueTask<PlayerData> IPlayerGrain.GetPlayerData()
+    ValueTask<PlayerData> IPlayerGrain.GetPlayerDataAsync()
     {
         return ValueTask.FromResult<PlayerData>( new() { Name = this.GrainReference.GrainIdentity.PrimaryKeyString, Point = _state.State.Point });
     }
 
-    async ValueTask<int> IPlayerGrain.AddPoint(int point)
+    async ValueTask<int> IPlayerGrain.AddPointAsync(int point)
     {
         _state.State.Point += point;
         await _state.WriteStateAsync();
         return _state.State.Point;
+    }
+
+    async public Task OnObserveItemAsync(game.GrpcStreamResponse grpcStreamResponse, StreamSequenceToken token)
+    {
+        await _streamToGrpc.OnNextAsync(grpcStreamResponse, token);
     }
 }

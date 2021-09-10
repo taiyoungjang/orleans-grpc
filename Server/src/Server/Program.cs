@@ -33,10 +33,15 @@ namespace Server
                     });
                     siloBuilder.UseLocalhostClustering()
                     .AddMemoryGrainStorage("PubSubStore")
+                    .AddSimpleMessageStreamProvider(RoomGrain.s_streamProviderName, options =>
+                    {
+                        options.FireAndForgetDelivery = true;
+                    })
                     .AddSimpleMessageStreamProvider(PlayerGrain.s_streamProviderName, options =>
                     {
                         options.FireAndForgetDelivery = true;
                     });
+
                     var redisAddress = $"{Environment.GetEnvironmentVariable("REDIS")}:6379";
                     siloBuilder.AddRedisGrainStorage("player", options => options.ConnectionString = redisAddress);
 
