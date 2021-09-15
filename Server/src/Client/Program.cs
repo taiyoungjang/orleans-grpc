@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using Grpc.Net.Client;
+using Grpc.Core;
+
 namespace game
 {
     public class Program
@@ -17,11 +14,27 @@ namespace game
             {
                 playerName = args[0];
             }
+            string token = System.Guid.NewGuid().ToString("N");
+            var credentials = CallCredentials.FromInterceptor((context, metadata) =>
+            {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    metadata.Add("Authorization", $"Bearer {token}");
+                }
+                return Task.CompletedTask;
+            });
+            //System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "abyss-kr.json");
+            //var googleCredentials = await Grpc.Auth.GoogleGrpcCredentials.GetApplicationDefaultAsync();
             //AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             //GrpcChannelOptions grpcChannelOptions = new GrpcChannelOptions() { Credentials = new };
-            using var channel = GrpcChannel.ForAddress("http://localhost:5000");
-            var playerNetworkClient = new game.PlayerNetwork.PlayerNetworkClient(channel);
-            var client = new Client.Client(playerNetworkClient, playerName);
+            using var channel = GrpcChannel.ForAddress("https://kr-trunk.abyss.stairgames.com:5000", new GrpcChannelOptions
+            {
+                //Credentials = googleCredentials
+                Credentials = ChannelCredentials.Create(new SslCredentials(), credentials)
+                //Credentials = ChannelCredentials.Create(ChannelCredentials.Insecure,credentials)
+            });
+            var grpcServicesClient = new game.PlayerNetwork.PlayerNetworkClient(channel);
+            var client = new Client.Client(grpcServicesClient, playerName);
             await client.TestTask();
             await Task.Delay(TimeSpan.FromSeconds(5));
         }

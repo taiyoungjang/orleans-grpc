@@ -35,32 +35,32 @@ namespace game {
             "YXRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIhsKC0pvaW5SZXF1ZXN0EgwK",
             "BHJvb20YASABKAkiMAoMSm9pblJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgS",
             "DwoHcGxheWVycxgCIAMoCSIcCgxMZWF2ZVJlcXVlc3QSDAoEcm9vbRgBIAEo",
-            "CSIdCg1MZWF2ZVJlc3BvbnNlEgwKBHJvb20YASABKAki1QMKEkdycGNTdHJl",
-            "YW1SZXNwb25zZRI6CgZvbkpvaW4YASABKAsyKC5wbGF5ZXJOZXR3b3JrLkdy",
-            "cGNTdHJlYW1SZXNwb25zZS5PbkpvaW5IABI8CgdvbkxlYXZlGAIgASgLMiku",
-            "cGxheWVyTmV0d29yay5HcnBjU3RyZWFtUmVzcG9uc2UuT25MZWF2ZUgAEjoK",
-            "Bm9uQ2hhdBgDIAEoCzIoLnBsYXllck5ldHdvcmsuR3JwY1N0cmVhbVJlc3Bv",
-            "bnNlLk9uQ2hhdEgAEj4KCG9uQ2xvc2VkGAQgASgLMioucGxheWVyTmV0d29y",
-            "ay5HcnBjU3RyZWFtUmVzcG9uc2UuT25DbG9zZWRIABpACgZPbkNoYXQSEAoI",
-            "cm9vbUluZm8YASABKAkSEwoLb3RoZXJQbGF5ZXIYAiABKAkSDwoHbWVzc2Fn",
-            "ZRgDIAEoCRovCgZPbkpvaW4SEAoIcm9vbUluZm8YASABKAkSEwoLb3RoZXJQ",
-            "bGF5ZXIYAiABKAkaMAoHT25MZWF2ZRIQCghyb29tSW5mbxgBIAEoCRITCgtv",
-            "dGhlclBsYXllchgCIAEoCRoaCghPbkNsb3NlZBIOCgZyZWFzb24YASABKAlC",
-            "CAoGYWN0aW9uMoEFCg1QbGF5ZXJOZXR3b3JrEjoKB0dldEF1dGgSGi5wbGF5",
-            "ZXJOZXR3b3JrLkF1dGhSZXF1ZXN0GhMucGxheWVyTmV0d29yay5VVUlEEkIK",
-            "DUdldFBsYXllckRhdGESFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS5wbGF5",
-            "ZXJOZXR3b3JrLlBsYXllckRhdGESSwoIQWRkUG9pbnQSHi5wbGF5ZXJOZXR3",
-            "b3JrLkFkZFBvaW50UmVxdWVzdBofLnBsYXllck5ldHdvcmsuQWRkUG9pbnRS",
-            "ZXNwb25zZRJOCg9HZXRBc3luY1N0cmVhbXMSFi5nb29nbGUucHJvdG9idWYu",
-            "RW1wdHkaIS5wbGF5ZXJOZXR3b3JrLkdycGNTdHJlYW1SZXNwb25zZTABEj8K",
-            "BEpvaW4SGi5wbGF5ZXJOZXR3b3JrLkpvaW5SZXF1ZXN0GhsucGxheWVyTmV0",
-            "d29yay5Kb2luUmVzcG9uc2USQgoFTGVhdmUSGy5wbGF5ZXJOZXR3b3JrLkxl",
-            "YXZlUmVxdWVzdBocLnBsYXllck5ldHdvcmsuTGVhdmVSZXNwb25zZRI/CgRD",
-            "aGF0EhoucGxheWVyTmV0d29yay5DaGF0UmVxdWVzdBobLnBsYXllck5ldHdv",
-            "cmsuQ2hhdFJlc3BvbnNlEkcKFEdldEF2YWlsYWJsZVJvb21MaXN0EhYuZ29v",
-            "Z2xlLnByb3RvYnVmLkVtcHR5GhcucGxheWVyTmV0d29yay5Sb29tTGlzdBJE",
-            "ChFHZXRKb2luZWRSb29tTGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoX",
-            "LnBsYXllck5ldHdvcmsuUm9vbUxpc3RCB6oCBGdhbWViBnByb3RvMw=="));
+            "CSIgCg1MZWF2ZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgi1QMKEkdycGNT",
+            "dHJlYW1SZXNwb25zZRI6CgZvbkpvaW4YASABKAsyKC5wbGF5ZXJOZXR3b3Jr",
+            "LkdycGNTdHJlYW1SZXNwb25zZS5PbkpvaW5IABI8CgdvbkxlYXZlGAIgASgL",
+            "MikucGxheWVyTmV0d29yay5HcnBjU3RyZWFtUmVzcG9uc2UuT25MZWF2ZUgA",
+            "EjoKBm9uQ2hhdBgDIAEoCzIoLnBsYXllck5ldHdvcmsuR3JwY1N0cmVhbVJl",
+            "c3BvbnNlLk9uQ2hhdEgAEj4KCG9uQ2xvc2VkGAQgASgLMioucGxheWVyTmV0",
+            "d29yay5HcnBjU3RyZWFtUmVzcG9uc2UuT25DbG9zZWRIABpACgZPbkNoYXQS",
+            "EAoIcm9vbUluZm8YASABKAkSEwoLb3RoZXJQbGF5ZXIYAiABKAkSDwoHbWVz",
+            "c2FnZRgDIAEoCRovCgZPbkpvaW4SEAoIcm9vbUluZm8YASABKAkSEwoLb3Ro",
+            "ZXJQbGF5ZXIYAiABKAkaMAoHT25MZWF2ZRIQCghyb29tSW5mbxgBIAEoCRIT",
+            "CgtvdGhlclBsYXllchgCIAEoCRoaCghPbkNsb3NlZBIOCgZyZWFzb24YASAB",
+            "KAlCCAoGYWN0aW9uMoEFCg1QbGF5ZXJOZXR3b3JrEjoKB0dldEF1dGgSGi5w",
+            "bGF5ZXJOZXR3b3JrLkF1dGhSZXF1ZXN0GhMucGxheWVyTmV0d29yay5VVUlE",
+            "EkIKDUdldFBsYXllckRhdGESFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS5w",
+            "bGF5ZXJOZXR3b3JrLlBsYXllckRhdGESSwoIQWRkUG9pbnQSHi5wbGF5ZXJO",
+            "ZXR3b3JrLkFkZFBvaW50UmVxdWVzdBofLnBsYXllck5ldHdvcmsuQWRkUG9p",
+            "bnRSZXNwb25zZRJOCg9HZXRBc3luY1N0cmVhbXMSFi5nb29nbGUucHJvdG9i",
+            "dWYuRW1wdHkaIS5wbGF5ZXJOZXR3b3JrLkdycGNTdHJlYW1SZXNwb25zZTAB",
+            "Ej8KBEpvaW4SGi5wbGF5ZXJOZXR3b3JrLkpvaW5SZXF1ZXN0GhsucGxheWVy",
+            "TmV0d29yay5Kb2luUmVzcG9uc2USQgoFTGVhdmUSGy5wbGF5ZXJOZXR3b3Jr",
+            "LkxlYXZlUmVxdWVzdBocLnBsYXllck5ldHdvcmsuTGVhdmVSZXNwb25zZRI/",
+            "CgRDaGF0EhoucGxheWVyTmV0d29yay5DaGF0UmVxdWVzdBobLnBsYXllck5l",
+            "dHdvcmsuQ2hhdFJlc3BvbnNlEkcKFEdldEF2YWlsYWJsZVJvb21MaXN0EhYu",
+            "Z29vZ2xlLnByb3RvYnVmLkVtcHR5GhcucGxheWVyTmV0d29yay5Sb29tTGlz",
+            "dBJEChFHZXRKb2luZWRSb29tTGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0",
+            "eRoXLnBsYXllck5ldHdvcmsuUm9vbUxpc3RCB6oCBGdhbWViBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -76,7 +76,7 @@ namespace game {
             new pbr::GeneratedClrTypeInfo(typeof(global::game.JoinRequest), global::game.JoinRequest.Parser, new[]{ "Room" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::game.JoinResponse), global::game.JoinResponse.Parser, new[]{ "Success", "Players" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::game.LeaveRequest), global::game.LeaveRequest.Parser, new[]{ "Room" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::game.LeaveResponse), global::game.LeaveResponse.Parser, new[]{ "Room" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::game.LeaveResponse), global::game.LeaveResponse.Parser, new[]{ "Success" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse), global::game.GrpcStreamResponse.Parser, new[]{ "OnJoin", "OnLeave", "OnChat", "OnClosed" }, new[]{ "Action" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse.Types.OnChat), global::game.GrpcStreamResponse.Types.OnChat.Parser, new[]{ "RoomInfo", "OtherPlayer", "Message" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse.Types.OnJoin), global::game.GrpcStreamResponse.Types.OnJoin.Parser, new[]{ "RoomInfo", "OtherPlayer" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse.Types.OnLeave), global::game.GrpcStreamResponse.Types.OnLeave.Parser, new[]{ "RoomInfo", "OtherPlayer" }, null, null, null, null),
@@ -1728,7 +1728,7 @@ namespace game {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public LeaveResponse(LeaveResponse other) : this() {
-      room_ = other.room_;
+      success_ = other.success_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1737,14 +1737,14 @@ namespace game {
       return new LeaveResponse(this);
     }
 
-    /// <summary>Field number for the "room" field.</summary>
-    public const int RoomFieldNumber = 1;
-    private string room_ = "";
+    /// <summary>Field number for the "success" field.</summary>
+    public const int SuccessFieldNumber = 1;
+    private bool success_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string Room {
-      get { return room_; }
+    public bool Success {
+      get { return success_; }
       set {
-        room_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        success_ = value;
       }
     }
 
@@ -1761,14 +1761,14 @@ namespace game {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Room != other.Room) return false;
+      if (Success != other.Success) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Room.Length != 0) hash ^= Room.GetHashCode();
+      if (Success != false) hash ^= Success.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1782,9 +1782,9 @@ namespace game {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Room.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(Room);
+      if (Success != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(Success);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1794,8 +1794,8 @@ namespace game {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Room.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Room);
+      if (Success != false) {
+        size += 1 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1808,8 +1808,8 @@ namespace game {
       if (other == null) {
         return;
       }
-      if (other.Room.Length != 0) {
-        Room = other.Room;
+      if (other.Success != false) {
+        Success = other.Success;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1822,8 +1822,8 @@ namespace game {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 10: {
-            Room = input.ReadString();
+          case 8: {
+            Success = input.ReadBool();
             break;
           }
         }

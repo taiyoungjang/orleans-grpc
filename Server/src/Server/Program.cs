@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Orleans;
 using Orleans.Hosting;
-using Orleans.Serialization;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Server
 {
@@ -49,7 +49,11 @@ namespace Server
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.ConfigureKestrel(options => options.ListenAnyIP(5000));
+                    webBuilder.ConfigureKestrel(options =>
+                    {
+                        var certificate = new X509Certificate2("abyss.stairgames.com.pfx", "Sagang20!@14");
+                        options.ListenAnyIP(5000, o => o.UseHttps(certificate));
+                    });
                     webBuilder.UseStartup<Startup>();
                 });
     }

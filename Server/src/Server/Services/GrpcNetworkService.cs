@@ -7,6 +7,9 @@ using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Google.Protobuf.WellKnownTypes;
 using game;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 
 namespace Server
 {
@@ -15,16 +18,19 @@ namespace Server
         private readonly ILogger<GrpcNetworkService> _logger;
         private readonly Orleans.IClusterClient _clusterClient;
         private static game.RoomList s_emptyRoomList = new();
-        public GrpcNetworkService(Orleans.IClusterClient clusterClient, ILogger<GrpcNetworkService> logger)
+        private readonly IDistributedCache _cache;
+        public GrpcNetworkService(Orleans.IClusterClient clusterClient, ILogger<GrpcNetworkService> logger, IDistributedCache cache)
         {
             _clusterClient = clusterClient;
             _logger = logger;
+            _cache = cache;
         }
         async public override Task<UUID> GetAuth(AuthRequest request, ServerCallContext context)
         {
             Guid guid;
             try
             {
+                await _cache.SetStringAsync(context.RequestHeaders.Get("authorization").Value, request.Name);
                 var player = _clusterClient.GetGrain<IPlayerGrain>(request.Name);
                 guid = await player.SetStreamAsync();
             }
@@ -36,47 +42,29 @@ namespace Server
             UUID ret = new() { Value = Google.Protobuf.ByteString.CopyFrom(guid.ToByteArray()) };
             return ret;
         }
-        private Guid GetAuthorization(ServerCallContext context)
+
+        async private Task<string> GetContextName(ServerCallContext context)
         {
-            var metaData = context.RequestHeaders.Get("uuid-bin");
-            if (metaData == null)
-            {
-                return Guid.Empty;
-            }
-            return new Guid(metaData.ValueBytes);
+            return await _cache.GetStringAsync(context.RequestHeaders.Get("authorization").Value);
         }
-        private string GetContextName(ServerCallContext context)
+        async private Task<IPlayerGrain> GetPlayer(ServerCallContext context)
         {
-            var metaData = context.RequestHeaders.Get("name");
-            if (metaData == null)
-            {
-                return string.Empty;
-            }
-            return metaData.Value;
-        }
-        private bool GetPlayer(ServerCallContext context, out IPlayerGrain outPlayer)
-        {
-            var name = GetContextName(context);
+            var name = await GetContextName(context);
             if (string.IsNullOrEmpty(name))
             {
-                outPlayer = null;
-                return false;
+                return null;
             }
-            outPlayer = _clusterClient.GetGrain<IPlayerGrain>(name);
-            return true;
+            return _clusterClient.GetGrain<IPlayerGrain>(name);
         }
 
         async public override Task GetAsyncStreams(global::Google.Protobuf.WellKnownTypes.Empty empty, IServerStreamWriter<GrpcStreamResponse> responseStreamWriter, ServerCallContext context)
         {
-            Guid guid = GetAuthorization(context);
-            if(guid.Equals(Guid.Empty))
+            var player = await GetPlayer(context);
+            if(player is null)
             {
                 return;
             }
-            if (!GetPlayer(context, out var player))
-            {
-                return;
-            }
+            var guid = System.Guid.NewGuid();
             async Task EndOfAsyncStream()
             {
                 await player.EndOfAsyncStreamAsync();
@@ -88,37 +76,41 @@ namespace Server
             await streamObserver.WaitConsumerTask();
         }
 
-        public override Task<PlayerData> GetPlayerData(Empty request, ServerCallContext context)
+        async public override Task<PlayerData> GetPlayerData(Empty request, ServerCallContext context)
         {
-            if (!GetPlayer(context, out var player))
+            var player = await GetPlayer(context);
+            if (player is null)
             {
-                throw new System.Exception();
+                return default;
             }
-            return player.GetPlayerDataAsync().AsTask();
+            return await player.GetPlayerDataAsync();
         }
         async public override Task<AddPointResponse> AddPoint(AddPointRequest request, ServerCallContext context)
         {
-            if (!GetPlayer(context, out var player))
+            var player = await GetPlayer(context);
+            if (player is null)
             {
-                throw new System.Exception();
+                return default;
             }
             return new() { AddedPoint = await player.AddPointAsync(request.AddPoint) };
         }
 
         async public override Task<ChatResponse> Chat(ChatRequest request, ServerCallContext context)
         {
-            if(!GetPlayer(context, out var player))
+            var player = await GetPlayer(context);
+            if (player is null)
             {
-                return new() {Success = false};
+                return default;
             }
             var ret = await player.ChatAsync(room: request.Room, message: request.Message);
             return new() { Success = ret };
         }
         async public override Task<JoinResponse> Join(JoinRequest request, ServerCallContext context)
         {
-            if (!GetPlayer(context, out var player))
+            var player = await GetPlayer(context);
+            if (player is null)
             {
-                return new() { Success = false };
+                return default;
             }
             var joinRet = await player.JoinAsync(room: request.Room);
             JoinResponse ret = new() { Success = joinRet.ret};
@@ -127,9 +119,10 @@ namespace Server
         }
         async public override Task<LeaveResponse> Leave(LeaveRequest request, ServerCallContext context)
         {
-            if (!GetPlayer(context, out var player))
+            var player = await GetPlayer(context);
+            if (player is null)
             {
-                return new() { Success = false };
+                return default;
             }
             var leaveRet = await player.LeaveAsync(room: request.Room);
             LeaveResponse ret = new() { Success = leaveRet };
@@ -144,7 +137,8 @@ namespace Server
         }
         async public override Task<RoomList> GetJoinedRoomList(Empty request, ServerCallContext context)
         {
-            if (!GetPlayer(context, out var player))
+            var player = await GetPlayer(context);
+            if (player is null)
             {
                 return s_emptyRoomList;
             }
