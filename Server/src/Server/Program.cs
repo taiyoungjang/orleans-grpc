@@ -51,7 +51,7 @@ namespace Server
                 {
                     webBuilder.ConfigureKestrel(options =>
                     {
-                        var certificate = new X509Certificate2("abyss.stairgames.com.pfx", "Sagang20!@14");
+                        var certificate = new X509Certificate2("abyss.stairgames.com.pfx", "1234"); 
                         options.ListenAnyIP(5000, o => o.UseHttps(certificate));
                     });
                     webBuilder.UseStartup<Startup>();

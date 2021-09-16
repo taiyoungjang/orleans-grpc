@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Orleans.Streams;
 
-public class RoomStreamObserver : IAsyncObserver<game.GrpcStreamResponse>
+public class RoomStreamObserver : IAsyncObserver<game.StreamServerEventsResponse>
 {
     private readonly string _roomName;
     private PlayerGrain _playerGrain;
@@ -19,7 +19,7 @@ public class RoomStreamObserver : IAsyncObserver<game.GrpcStreamResponse>
         return Task.CompletedTask;
     }
 
-    public Task OnNextAsync(game.GrpcStreamResponse item, StreamSequenceToken token = null)
+    public Task OnNextAsync(game.StreamServerEventsResponse item, StreamSequenceToken token = null)
     {
         return _playerGrain.OnObserveItemAsync(item, token);
     }

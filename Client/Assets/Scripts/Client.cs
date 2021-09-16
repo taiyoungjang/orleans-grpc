@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using game;
-
+using Grpc.Core;
 public class NetworkClient
 {
     public static global::Google.Protobuf.WellKnownTypes.Empty s_empty = new global::Google.Protobuf.WellKnownTypes.Empty();
@@ -11,33 +11,59 @@ public class NetworkClient
     private game.PlayerNetwork.PlayerNetworkClient _playerNetworkClient;
     private string _name;
     private System.Threading.CancellationToken _token;
-    public NetworkClient(game.PlayerNetwork.PlayerNetworkClient playerNetworkClient, string name, System.Threading.CancellationToken token
-        )
+    private Metadata.Entry _bearer;
+    private Grpc.Core.Channel _channel;
+    public NetworkClient(string host, int port, string name, System.Threading.CancellationToken token)
     {
-        _playerNetworkClient = playerNetworkClient;
+        var credentials = CallCredentials.FromInterceptor(AsyncAuthInterceptor);
+        //System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "abyss-kr.json");
+        //var googleCredentials = await Grpc.Auth.GoogleGrpcCredentials.GetApplicationDefaultAsync();
+        //AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+        //GrpcChannelOptions grpcChannelOptions = new GrpcChannelOptions() { Credentials = new };
+        _channel = new Grpc.Core.Channel(host: host, port: port, credentials: ChannelCredentials.Create(new SslCredentials(), credentials));
+        _playerNetworkClient = new game.PlayerNetwork.PlayerNetworkClient(_channel);
         _name = name;
         _token = token;
+        _bearer = null;
+    }
+    private void SetBearer(Guid guid)
+    {
+        if (_bearer == null)
+        {
+            _bearer = new Metadata.Entry("authorization", guid.ToString());
+        }
+    }
+
+    private Task AsyncAuthInterceptor(AuthInterceptorContext context, Metadata metadata)
+    {
+        if (_bearer != null)
+        {
+            metadata.Add(_bearer);
+        }
+        return Task.CompletedTask;
     }
     async public Task TestTask()
     {
         var uuid = await _playerNetworkClient.GetAuthAsync(new AuthRequest() { Name = _name });
+        var guid = new Guid(uuid.Value.ToByteArray());
+        SetBearer(guid);
         _ = Task.Run(() => CallRpcTask());
-        var responseStream = _playerNetworkClient.GetAsyncStreams(s_empty).ResponseStream;
+        var responseStream = _playerNetworkClient.ServerStreamServerEvents(s_empty).ResponseStream;
         while (await responseStream.MoveNext(_token))
         {
-            GrpcStreamResponse current = responseStream.Current;
+            StreamServerEventsResponse current = responseStream.Current;
             switch (current.ActionCase)
             {
-                case GrpcStreamResponse.ActionOneofCase.OnChat:
+                case StreamServerEventsResponse.ActionOneofCase.OnChat:
                     UnityEngine.Debug.Log($"OnChat Room:{current.OnChat.RoomInfo} player:{current.OnChat.OtherPlayer} message:{current.OnChat.Message}");
                     break;
-                case GrpcStreamResponse.ActionOneofCase.OnJoin:
+                case StreamServerEventsResponse.ActionOneofCase.OnJoin:
                     UnityEngine.Debug.Log($"OnJoin Room:{current.OnJoin.RoomInfo} player:{current.OnJoin.OtherPlayer}");
                     break;
-                case GrpcStreamResponse.ActionOneofCase.OnLeave:
+                case StreamServerEventsResponse.ActionOneofCase.OnLeave:
                     UnityEngine.Debug.Log($"OnLeave Room:{current.OnLeave.RoomInfo} player:{current.OnLeave.OtherPlayer}");
                     break;
-                case GrpcStreamResponse.ActionOneofCase.OnClosed:
+                case StreamServerEventsResponse.ActionOneofCase.OnClosed:
                     UnityEngine.Debug.Log($"OnClosed Reason:{current.OnClosed.Reason} ");
                     break;
             }

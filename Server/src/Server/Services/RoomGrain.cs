@@ -12,7 +12,7 @@ public class RoomGrain : Orleans.Grain, IRoomGrain
     public static string s_streamNamespace = "default";
     private readonly ILogger<RoomGrain> _logger;
     private List<PlayerInfo> _playerInfos;
-    private IAsyncStream<game.GrpcStreamResponse> _stream;
+    private IAsyncStream<game.StreamServerEventsResponse> _stream;
     public RoomGrain(ILogger<RoomGrain> logger)
     {
         _logger = logger;
@@ -23,7 +23,7 @@ public class RoomGrain : Orleans.Grain, IRoomGrain
         var roomManager = this.GrainFactory.GetGrain<IRoomManagerGrain>(0);
         await roomManager.CreateAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
         var streamProvider = GetStreamProvider(s_streamProviderName);
-        _stream = streamProvider.GetStream<game.GrpcStreamResponse>(Guid.NewGuid(), s_streamNamespace);
+        _stream = streamProvider.GetStream<game.StreamServerEventsResponse>(Guid.NewGuid(), s_streamNamespace);
         await base.OnActivateAsync();
     }
     async public override Task OnDeactivateAsync()
@@ -36,7 +36,7 @@ public class RoomGrain : Orleans.Grain, IRoomGrain
     async ValueTask<bool> IRoomGrain.ChatAsync(string playerName, string message)
     {
         string roomName = this.GrainReference.GrainIdentity.PrimaryKeyString;
-        GrpcStreamResponse grpcStreamResponse = new()
+        StreamServerEventsResponse grpcStreamResponse = new()
         {
             OnChat = new()
             {
@@ -56,7 +56,7 @@ public class RoomGrain : Orleans.Grain, IRoomGrain
         if (leaver != null)
         {
             _playerInfos.RemoveAll(t => t.Name == player);
-            GrpcStreamResponse grpcStreamResponse = new()
+            StreamServerEventsResponse grpcStreamResponse = new()
             {
                 OnLeave = new()
                 {
@@ -80,7 +80,7 @@ public class RoomGrain : Orleans.Grain, IRoomGrain
         List<string> players = _playerInfos.Select(t => t.Name).ToList();
         _playerInfos.Add(new(name));
 
-        GrpcStreamResponse grpcStreamResponse = new()
+        StreamServerEventsResponse grpcStreamResponse = new()
         {
             OnJoin = new()
             {

@@ -16,8 +16,8 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     public static string s_streamProviderName = "playergrain";
     public static string s_streamNamespace = "default";
 
-    private Orleans.Streams.IAsyncStream<game.GrpcStreamResponse> _streamToGrpc;
-    private Dictionary<string,StreamSubscriptionHandle<game.GrpcStreamResponse>> _roomStreamObservers;
+    private Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> _streamToGrpc;
+    private Dictionary<string,StreamSubscriptionHandle<game.StreamServerEventsResponse>> _roomStreamObservers;
     private List<Room> _joinedRoomList;
     private readonly IPersistentState<PlayerData> _state;
     public PlayerGrain(
@@ -42,7 +42,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     {
         if(_streamToGrpc != null && this is IPlayerGrain playerGrain)
         {
-            GrpcStreamResponse grpcStreamResponse = new()
+            StreamServerEventsResponse grpcStreamResponse = new()
             {
                 OnClosed = new()
                 {
@@ -59,7 +59,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         }
         Guid guid = Guid.Parse(_state.Etag);
         var streamProvider = GetStreamProvider(s_streamProviderName);
-        _streamToGrpc = streamProvider.GetStream<game.GrpcStreamResponse>(guid, s_streamNamespace);
+        _streamToGrpc = streamProvider.GetStream<game.StreamServerEventsResponse>(guid, s_streamNamespace);
         return guid;
     }
     async ValueTask IPlayerGrain.EndOfAsyncStreamAsync()
@@ -98,7 +98,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         if(joinRet.success)
         {
             var stream = this.GetStreamProvider(RoomGrain.s_streamProviderName)
-                .GetStream<GrpcStreamResponse>(joinRet.streamGuid, RoomGrain.s_streamNamespace);
+                .GetStream<StreamServerEventsResponse>(joinRet.streamGuid, RoomGrain.s_streamNamespace);
 
             var handle = await stream.SubscribeAsync(new RoomStreamObserver(room, this));
             _roomStreamObservers.Add(room, handle);
@@ -137,7 +137,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         return _state.State.Point;
     }
 
-    async public Task OnObserveItemAsync(game.GrpcStreamResponse grpcStreamResponse, StreamSequenceToken token)
+    async public Task OnObserveItemAsync(game.StreamServerEventsResponse grpcStreamResponse, StreamSequenceToken token)
     {
         await _streamToGrpc.OnNextAsync(grpcStreamResponse, token);
     }

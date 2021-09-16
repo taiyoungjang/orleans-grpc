@@ -30,9 +30,9 @@ namespace Server
             Guid guid;
             try
             {
-                await _cache.SetStringAsync(context.RequestHeaders.Get("authorization").Value, request.Name);
                 var player = _clusterClient.GetGrain<IPlayerGrain>(request.Name);
                 guid = await player.SetStreamAsync();
+                await _cache.SetStringAsync(guid.ToString(), request.Name);
             }
             catch (Exception ex)
             {
@@ -57,7 +57,7 @@ namespace Server
             return _clusterClient.GetGrain<IPlayerGrain>(name);
         }
 
-        async public override Task GetAsyncStreams(global::Google.Protobuf.WellKnownTypes.Empty empty, IServerStreamWriter<GrpcStreamResponse> responseStreamWriter, ServerCallContext context)
+        async public override Task ServerStreamServerEvents(global::Google.Protobuf.WellKnownTypes.Empty empty, IServerStreamWriter<StreamServerEventsResponse> responseStreamWriter, ServerCallContext context)
         {
             var player = await GetPlayer(context);
             if(player is null)
@@ -71,7 +71,7 @@ namespace Server
             }
             var stream = _clusterClient
                 .GetStreamProvider(PlayerGrain.s_streamProviderName)
-                .GetStream<GrpcStreamResponse>(guid, PlayerGrain.s_streamNamespace);
+                .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.s_streamNamespace);
             var streamObserver = new OrleansStreamObserver(guid, responseStreamWriter, stream, EndOfAsyncStream, context.CancellationToken);
             await streamObserver.WaitConsumerTask();
         }

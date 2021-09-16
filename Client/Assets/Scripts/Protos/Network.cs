@@ -35,32 +35,34 @@ namespace game {
             "YXRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIhsKC0pvaW5SZXF1ZXN0EgwK",
             "BHJvb20YASABKAkiMAoMSm9pblJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgS",
             "DwoHcGxheWVycxgCIAMoCSIcCgxMZWF2ZVJlcXVlc3QSDAoEcm9vbRgBIAEo",
-            "CSIgCg1MZWF2ZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgi1QMKEkdycGNT",
-            "dHJlYW1SZXNwb25zZRI6CgZvbkpvaW4YASABKAsyKC5wbGF5ZXJOZXR3b3Jr",
-            "LkdycGNTdHJlYW1SZXNwb25zZS5PbkpvaW5IABI8CgdvbkxlYXZlGAIgASgL",
-            "MikucGxheWVyTmV0d29yay5HcnBjU3RyZWFtUmVzcG9uc2UuT25MZWF2ZUgA",
-            "EjoKBm9uQ2hhdBgDIAEoCzIoLnBsYXllck5ldHdvcmsuR3JwY1N0cmVhbVJl",
-            "c3BvbnNlLk9uQ2hhdEgAEj4KCG9uQ2xvc2VkGAQgASgLMioucGxheWVyTmV0",
-            "d29yay5HcnBjU3RyZWFtUmVzcG9uc2UuT25DbG9zZWRIABpACgZPbkNoYXQS",
-            "EAoIcm9vbUluZm8YASABKAkSEwoLb3RoZXJQbGF5ZXIYAiABKAkSDwoHbWVz",
-            "c2FnZRgDIAEoCRovCgZPbkpvaW4SEAoIcm9vbUluZm8YASABKAkSEwoLb3Ro",
-            "ZXJQbGF5ZXIYAiABKAkaMAoHT25MZWF2ZRIQCghyb29tSW5mbxgBIAEoCRIT",
-            "CgtvdGhlclBsYXllchgCIAEoCRoaCghPbkNsb3NlZBIOCgZyZWFzb24YASAB",
-            "KAlCCAoGYWN0aW9uMoEFCg1QbGF5ZXJOZXR3b3JrEjoKB0dldEF1dGgSGi5w",
-            "bGF5ZXJOZXR3b3JrLkF1dGhSZXF1ZXN0GhMucGxheWVyTmV0d29yay5VVUlE",
-            "EkIKDUdldFBsYXllckRhdGESFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGS5w",
-            "bGF5ZXJOZXR3b3JrLlBsYXllckRhdGESSwoIQWRkUG9pbnQSHi5wbGF5ZXJO",
-            "ZXR3b3JrLkFkZFBvaW50UmVxdWVzdBofLnBsYXllck5ldHdvcmsuQWRkUG9p",
-            "bnRSZXNwb25zZRJOCg9HZXRBc3luY1N0cmVhbXMSFi5nb29nbGUucHJvdG9i",
-            "dWYuRW1wdHkaIS5wbGF5ZXJOZXR3b3JrLkdycGNTdHJlYW1SZXNwb25zZTAB",
-            "Ej8KBEpvaW4SGi5wbGF5ZXJOZXR3b3JrLkpvaW5SZXF1ZXN0GhsucGxheWVy",
-            "TmV0d29yay5Kb2luUmVzcG9uc2USQgoFTGVhdmUSGy5wbGF5ZXJOZXR3b3Jr",
-            "LkxlYXZlUmVxdWVzdBocLnBsYXllck5ldHdvcmsuTGVhdmVSZXNwb25zZRI/",
-            "CgRDaGF0EhoucGxheWVyTmV0d29yay5DaGF0UmVxdWVzdBobLnBsYXllck5l",
-            "dHdvcmsuQ2hhdFJlc3BvbnNlEkcKFEdldEF2YWlsYWJsZVJvb21MaXN0EhYu",
-            "Z29vZ2xlLnByb3RvYnVmLkVtcHR5GhcucGxheWVyTmV0d29yay5Sb29tTGlz",
-            "dBJEChFHZXRKb2luZWRSb29tTGlzdBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0",
-            "eRoXLnBsYXllck5ldHdvcmsuUm9vbUxpc3RCB6oCBGdhbWViBnByb3RvMw=="));
+            "CSIgCg1MZWF2ZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgi/QMKGlN0cmVh",
+            "bVNlcnZlckV2ZW50c1Jlc3BvbnNlEkIKBm9uSm9pbhgBIAEoCzIwLnBsYXll",
+            "ck5ldHdvcmsuU3RyZWFtU2VydmVyRXZlbnRzUmVzcG9uc2UuT25Kb2luSAAS",
+            "RAoHb25MZWF2ZRgCIAEoCzIxLnBsYXllck5ldHdvcmsuU3RyZWFtU2VydmVy",
+            "RXZlbnRzUmVzcG9uc2UuT25MZWF2ZUgAEkIKBm9uQ2hhdBgDIAEoCzIwLnBs",
+            "YXllck5ldHdvcmsuU3RyZWFtU2VydmVyRXZlbnRzUmVzcG9uc2UuT25DaGF0",
+            "SAASRgoIb25DbG9zZWQYBCABKAsyMi5wbGF5ZXJOZXR3b3JrLlN0cmVhbVNl",
+            "cnZlckV2ZW50c1Jlc3BvbnNlLk9uQ2xvc2VkSAAaQAoGT25DaGF0EhAKCHJv",
+            "b21JbmZvGAEgASgJEhMKC290aGVyUGxheWVyGAIgASgJEg8KB21lc3NhZ2UY",
+            "AyABKAkaLwoGT25Kb2luEhAKCHJvb21JbmZvGAEgASgJEhMKC290aGVyUGxh",
+            "eWVyGAIgASgJGjAKB09uTGVhdmUSEAoIcm9vbUluZm8YASABKAkSEwoLb3Ro",
+            "ZXJQbGF5ZXIYAiABKAkaGgoIT25DbG9zZWQSDgoGcmVhc29uGAEgASgJQggK",
+            "BmFjdGlvbjKSBQoNUGxheWVyTmV0d29yaxI6CgdHZXRBdXRoEhoucGxheWVy",
+            "TmV0d29yay5BdXRoUmVxdWVzdBoTLnBsYXllck5ldHdvcmsuVVVJRBJCCg1H",
+            "ZXRQbGF5ZXJEYXRhEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhkucGxheWVy",
+            "TmV0d29yay5QbGF5ZXJEYXRhEksKCEFkZFBvaW50Eh4ucGxheWVyTmV0d29y",
+            "ay5BZGRQb2ludFJlcXVlc3QaHy5wbGF5ZXJOZXR3b3JrLkFkZFBvaW50UmVz",
+            "cG9uc2USXwoYU2VydmVyU3RyZWFtU2VydmVyRXZlbnRzEhYuZ29vZ2xlLnBy",
+            "b3RvYnVmLkVtcHR5GikucGxheWVyTmV0d29yay5TdHJlYW1TZXJ2ZXJFdmVu",
+            "dHNSZXNwb25zZTABEj8KBEpvaW4SGi5wbGF5ZXJOZXR3b3JrLkpvaW5SZXF1",
+            "ZXN0GhsucGxheWVyTmV0d29yay5Kb2luUmVzcG9uc2USQgoFTGVhdmUSGy5w",
+            "bGF5ZXJOZXR3b3JrLkxlYXZlUmVxdWVzdBocLnBsYXllck5ldHdvcmsuTGVh",
+            "dmVSZXNwb25zZRI/CgRDaGF0EhoucGxheWVyTmV0d29yay5DaGF0UmVxdWVz",
+            "dBobLnBsYXllck5ldHdvcmsuQ2hhdFJlc3BvbnNlEkcKFEdldEF2YWlsYWJs",
+            "ZVJvb21MaXN0EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhcucGxheWVyTmV0",
+            "d29yay5Sb29tTGlzdBJEChFHZXRKb2luZWRSb29tTGlzdBIWLmdvb2dsZS5w",
+            "cm90b2J1Zi5FbXB0eRoXLnBsYXllck5ldHdvcmsuUm9vbUxpc3RCB6oCBGdh",
+            "bWViBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -77,10 +79,10 @@ namespace game {
             new pbr::GeneratedClrTypeInfo(typeof(global::game.JoinResponse), global::game.JoinResponse.Parser, new[]{ "Success", "Players" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::game.LeaveRequest), global::game.LeaveRequest.Parser, new[]{ "Room" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::game.LeaveResponse), global::game.LeaveResponse.Parser, new[]{ "Success" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse), global::game.GrpcStreamResponse.Parser, new[]{ "OnJoin", "OnLeave", "OnChat", "OnClosed" }, new[]{ "Action" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse.Types.OnChat), global::game.GrpcStreamResponse.Types.OnChat.Parser, new[]{ "RoomInfo", "OtherPlayer", "Message" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse.Types.OnJoin), global::game.GrpcStreamResponse.Types.OnJoin.Parser, new[]{ "RoomInfo", "OtherPlayer" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse.Types.OnLeave), global::game.GrpcStreamResponse.Types.OnLeave.Parser, new[]{ "RoomInfo", "OtherPlayer" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::game.GrpcStreamResponse.Types.OnClosed), global::game.GrpcStreamResponse.Types.OnClosed.Parser, new[]{ "Reason" }, null, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::game.StreamServerEventsResponse), global::game.StreamServerEventsResponse.Parser, new[]{ "OnJoin", "OnLeave", "OnChat", "OnClosed" }, new[]{ "Action" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::game.StreamServerEventsResponse.Types.OnChat), global::game.StreamServerEventsResponse.Types.OnChat.Parser, new[]{ "RoomInfo", "OtherPlayer", "Message" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::game.StreamServerEventsResponse.Types.OnJoin), global::game.StreamServerEventsResponse.Types.OnJoin.Parser, new[]{ "RoomInfo", "OtherPlayer" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::game.StreamServerEventsResponse.Types.OnLeave), global::game.StreamServerEventsResponse.Types.OnLeave.Parser, new[]{ "RoomInfo", "OtherPlayer" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::game.StreamServerEventsResponse.Types.OnClosed), global::game.StreamServerEventsResponse.Types.OnClosed.Parser, new[]{ "Reason" }, null, null, null, null)})
           }));
     }
     #endregion
@@ -1832,11 +1834,11 @@ namespace game {
 
   }
 
-  public sealed partial class GrpcStreamResponse : pb::IMessage<GrpcStreamResponse> {
-    private static readonly pb::MessageParser<GrpcStreamResponse> _parser = new pb::MessageParser<GrpcStreamResponse>(() => new GrpcStreamResponse());
+  public sealed partial class StreamServerEventsResponse : pb::IMessage<StreamServerEventsResponse> {
+    private static readonly pb::MessageParser<StreamServerEventsResponse> _parser = new pb::MessageParser<StreamServerEventsResponse>(() => new StreamServerEventsResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<GrpcStreamResponse> Parser { get { return _parser; } }
+    public static pb::MessageParser<StreamServerEventsResponse> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -1849,14 +1851,14 @@ namespace game {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public GrpcStreamResponse() {
+    public StreamServerEventsResponse() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public GrpcStreamResponse(GrpcStreamResponse other) : this() {
+    public StreamServerEventsResponse(StreamServerEventsResponse other) : this() {
       switch (other.ActionCase) {
         case ActionOneofCase.OnJoin:
           OnJoin = other.OnJoin.Clone();
@@ -1876,15 +1878,15 @@ namespace game {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public GrpcStreamResponse Clone() {
-      return new GrpcStreamResponse(this);
+    public StreamServerEventsResponse Clone() {
+      return new StreamServerEventsResponse(this);
     }
 
     /// <summary>Field number for the "onJoin" field.</summary>
     public const int OnJoinFieldNumber = 1;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::game.GrpcStreamResponse.Types.OnJoin OnJoin {
-      get { return actionCase_ == ActionOneofCase.OnJoin ? (global::game.GrpcStreamResponse.Types.OnJoin) action_ : null; }
+    public global::game.StreamServerEventsResponse.Types.OnJoin OnJoin {
+      get { return actionCase_ == ActionOneofCase.OnJoin ? (global::game.StreamServerEventsResponse.Types.OnJoin) action_ : null; }
       set {
         action_ = value;
         actionCase_ = value == null ? ActionOneofCase.None : ActionOneofCase.OnJoin;
@@ -1894,8 +1896,8 @@ namespace game {
     /// <summary>Field number for the "onLeave" field.</summary>
     public const int OnLeaveFieldNumber = 2;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::game.GrpcStreamResponse.Types.OnLeave OnLeave {
-      get { return actionCase_ == ActionOneofCase.OnLeave ? (global::game.GrpcStreamResponse.Types.OnLeave) action_ : null; }
+    public global::game.StreamServerEventsResponse.Types.OnLeave OnLeave {
+      get { return actionCase_ == ActionOneofCase.OnLeave ? (global::game.StreamServerEventsResponse.Types.OnLeave) action_ : null; }
       set {
         action_ = value;
         actionCase_ = value == null ? ActionOneofCase.None : ActionOneofCase.OnLeave;
@@ -1905,8 +1907,8 @@ namespace game {
     /// <summary>Field number for the "onChat" field.</summary>
     public const int OnChatFieldNumber = 3;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::game.GrpcStreamResponse.Types.OnChat OnChat {
-      get { return actionCase_ == ActionOneofCase.OnChat ? (global::game.GrpcStreamResponse.Types.OnChat) action_ : null; }
+    public global::game.StreamServerEventsResponse.Types.OnChat OnChat {
+      get { return actionCase_ == ActionOneofCase.OnChat ? (global::game.StreamServerEventsResponse.Types.OnChat) action_ : null; }
       set {
         action_ = value;
         actionCase_ = value == null ? ActionOneofCase.None : ActionOneofCase.OnChat;
@@ -1916,8 +1918,8 @@ namespace game {
     /// <summary>Field number for the "onClosed" field.</summary>
     public const int OnClosedFieldNumber = 4;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::game.GrpcStreamResponse.Types.OnClosed OnClosed {
-      get { return actionCase_ == ActionOneofCase.OnClosed ? (global::game.GrpcStreamResponse.Types.OnClosed) action_ : null; }
+    public global::game.StreamServerEventsResponse.Types.OnClosed OnClosed {
+      get { return actionCase_ == ActionOneofCase.OnClosed ? (global::game.StreamServerEventsResponse.Types.OnClosed) action_ : null; }
       set {
         action_ = value;
         actionCase_ = value == null ? ActionOneofCase.None : ActionOneofCase.OnClosed;
@@ -1947,11 +1949,11 @@ namespace game {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as GrpcStreamResponse);
+      return Equals(other as StreamServerEventsResponse);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(GrpcStreamResponse other) {
+    public bool Equals(StreamServerEventsResponse other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2030,32 +2032,32 @@ namespace game {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(GrpcStreamResponse other) {
+    public void MergeFrom(StreamServerEventsResponse other) {
       if (other == null) {
         return;
       }
       switch (other.ActionCase) {
         case ActionOneofCase.OnJoin:
           if (OnJoin == null) {
-            OnJoin = new global::game.GrpcStreamResponse.Types.OnJoin();
+            OnJoin = new global::game.StreamServerEventsResponse.Types.OnJoin();
           }
           OnJoin.MergeFrom(other.OnJoin);
           break;
         case ActionOneofCase.OnLeave:
           if (OnLeave == null) {
-            OnLeave = new global::game.GrpcStreamResponse.Types.OnLeave();
+            OnLeave = new global::game.StreamServerEventsResponse.Types.OnLeave();
           }
           OnLeave.MergeFrom(other.OnLeave);
           break;
         case ActionOneofCase.OnChat:
           if (OnChat == null) {
-            OnChat = new global::game.GrpcStreamResponse.Types.OnChat();
+            OnChat = new global::game.StreamServerEventsResponse.Types.OnChat();
           }
           OnChat.MergeFrom(other.OnChat);
           break;
         case ActionOneofCase.OnClosed:
           if (OnClosed == null) {
-            OnClosed = new global::game.GrpcStreamResponse.Types.OnClosed();
+            OnClosed = new global::game.StreamServerEventsResponse.Types.OnClosed();
           }
           OnClosed.MergeFrom(other.OnClosed);
           break;
@@ -2073,7 +2075,7 @@ namespace game {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            global::game.GrpcStreamResponse.Types.OnJoin subBuilder = new global::game.GrpcStreamResponse.Types.OnJoin();
+            global::game.StreamServerEventsResponse.Types.OnJoin subBuilder = new global::game.StreamServerEventsResponse.Types.OnJoin();
             if (actionCase_ == ActionOneofCase.OnJoin) {
               subBuilder.MergeFrom(OnJoin);
             }
@@ -2082,7 +2084,7 @@ namespace game {
             break;
           }
           case 18: {
-            global::game.GrpcStreamResponse.Types.OnLeave subBuilder = new global::game.GrpcStreamResponse.Types.OnLeave();
+            global::game.StreamServerEventsResponse.Types.OnLeave subBuilder = new global::game.StreamServerEventsResponse.Types.OnLeave();
             if (actionCase_ == ActionOneofCase.OnLeave) {
               subBuilder.MergeFrom(OnLeave);
             }
@@ -2091,7 +2093,7 @@ namespace game {
             break;
           }
           case 26: {
-            global::game.GrpcStreamResponse.Types.OnChat subBuilder = new global::game.GrpcStreamResponse.Types.OnChat();
+            global::game.StreamServerEventsResponse.Types.OnChat subBuilder = new global::game.StreamServerEventsResponse.Types.OnChat();
             if (actionCase_ == ActionOneofCase.OnChat) {
               subBuilder.MergeFrom(OnChat);
             }
@@ -2100,7 +2102,7 @@ namespace game {
             break;
           }
           case 34: {
-            global::game.GrpcStreamResponse.Types.OnClosed subBuilder = new global::game.GrpcStreamResponse.Types.OnClosed();
+            global::game.StreamServerEventsResponse.Types.OnClosed subBuilder = new global::game.StreamServerEventsResponse.Types.OnClosed();
             if (actionCase_ == ActionOneofCase.OnClosed) {
               subBuilder.MergeFrom(OnClosed);
             }
@@ -2113,7 +2115,7 @@ namespace game {
     }
 
     #region Nested types
-    /// <summary>Container for nested types declared in the GrpcStreamResponse message type.</summary>
+    /// <summary>Container for nested types declared in the StreamServerEventsResponse message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       public sealed partial class OnChat : pb::IMessage<OnChat> {
@@ -2124,7 +2126,7 @@ namespace game {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::game.GrpcStreamResponse.Descriptor.NestedTypes[0]; }
+          get { return global::game.StreamServerEventsResponse.Descriptor.NestedTypes[0]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2309,7 +2311,7 @@ namespace game {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::game.GrpcStreamResponse.Descriptor.NestedTypes[1]; }
+          get { return global::game.StreamServerEventsResponse.Descriptor.NestedTypes[1]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2466,7 +2468,7 @@ namespace game {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::game.GrpcStreamResponse.Descriptor.NestedTypes[2]; }
+          get { return global::game.StreamServerEventsResponse.Descriptor.NestedTypes[2]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2623,7 +2625,7 @@ namespace game {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::game.GrpcStreamResponse.Descriptor.NestedTypes[3]; }
+          get { return global::game.StreamServerEventsResponse.Descriptor.NestedTypes[3]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

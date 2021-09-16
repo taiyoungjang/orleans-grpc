@@ -18,7 +18,7 @@ namespace game {
     static readonly grpc::Marshaller<global::game.PlayerData> __Marshaller_playerNetwork_PlayerData = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.PlayerData.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.AddPointRequest> __Marshaller_playerNetwork_AddPointRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.AddPointRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.AddPointResponse> __Marshaller_playerNetwork_AddPointResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.AddPointResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::game.GrpcStreamResponse> __Marshaller_playerNetwork_GrpcStreamResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.GrpcStreamResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::game.StreamServerEventsResponse> __Marshaller_playerNetwork_StreamServerEventsResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.StreamServerEventsResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.JoinRequest> __Marshaller_playerNetwork_JoinRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.JoinRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.JoinResponse> __Marshaller_playerNetwork_JoinResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.JoinResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.LeaveRequest> __Marshaller_playerNetwork_LeaveRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.LeaveRequest.Parser.ParseFrom);
@@ -48,12 +48,12 @@ namespace game {
         __Marshaller_playerNetwork_AddPointRequest,
         __Marshaller_playerNetwork_AddPointResponse);
 
-    static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.GrpcStreamResponse> __Method_GetAsyncStreams = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.GrpcStreamResponse>(
+    static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.StreamServerEventsResponse> __Method_ServerStreamServerEvents = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.StreamServerEventsResponse>(
         grpc::MethodType.ServerStreaming,
         __ServiceName,
-        "GetAsyncStreams",
+        "ServerStreamServerEvents",
         __Marshaller_google_protobuf_Empty,
-        __Marshaller_playerNetwork_GrpcStreamResponse);
+        __Marshaller_playerNetwork_StreamServerEventsResponse);
 
     static readonly grpc::Method<global::game.JoinRequest, global::game.JoinResponse> __Method_Join = new grpc::Method<global::game.JoinRequest, global::game.JoinResponse>(
         grpc::MethodType.Unary,
@@ -167,13 +167,13 @@ namespace game {
       {
         return CallInvoker.AsyncUnaryCall(__Method_AddPoint, null, options, request);
       }
-      public virtual grpc::AsyncServerStreamingCall<global::game.GrpcStreamResponse> GetAsyncStreams(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncServerStreamingCall<global::game.StreamServerEventsResponse> ServerStreamServerEvents(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetAsyncStreams(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return ServerStreamServerEvents(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncServerStreamingCall<global::game.GrpcStreamResponse> GetAsyncStreams(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
+      public virtual grpc::AsyncServerStreamingCall<global::game.StreamServerEventsResponse> ServerStreamServerEvents(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
       {
-        return CallInvoker.AsyncServerStreamingCall(__Method_GetAsyncStreams, null, options, request);
+        return CallInvoker.AsyncServerStreamingCall(__Method_ServerStreamServerEvents, null, options, request);
       }
       public virtual global::game.JoinResponse Join(global::game.JoinRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {

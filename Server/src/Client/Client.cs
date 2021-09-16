@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using game;
+using Grpc.Core;
+using Grpc.Net.Client;
 
 namespace Client
 {
@@ -12,38 +14,72 @@ namespace Client
 
         private game.PlayerNetwork.PlayerNetworkClient _playerNetworkClient;
         private string _name;
-        public Client(game.PlayerNetwork.PlayerNetworkClient playerNetworkClient, string name)
+        private GrpcChannel _channel;
+        private Metadata.Entry _bearer;
+        public Client(string name)
         {
-            _playerNetworkClient = playerNetworkClient;
+            var credentials = CallCredentials.FromInterceptor(AsyncAuthInterceptor);
+            //System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "abyss-kr.json");
+            //var googleCredentials = await Grpc.Auth.GoogleGrpcCredentials.GetApplicationDefaultAsync();
+            //AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            //GrpcChannelOptions grpcChannelOptions = new GrpcChannelOptions() { Credentials = new };
+            _channel = GrpcChannel.ForAddress("https://localhost.abyss.stairgames.com:5000", new GrpcChannelOptions
+            {
+                //Credentials = googleCredentials
+                Credentials = ChannelCredentials.Create(new SslCredentials(), credentials)
+                //Credentials = ChannelCredentials.Create(ChannelCredentials.Insecure,credentials)
+            });
+            _playerNetworkClient = new game.PlayerNetwork.PlayerNetworkClient(_channel);
             _name = name;
+            _bearer = null;
+        }
+        private void SetBearer(Guid guid)
+        {
+            if (_bearer == null)
+            {
+                _bearer = new Metadata.Entry("authorization", guid.ToString());
+            }
+        }
+
+        private Task AsyncAuthInterceptor(AuthInterceptorContext context, Metadata metadata)
+        {
+            if (_bearer != null)
+            {
+                metadata.Add(_bearer);
+            }
+            return Task.CompletedTask;
         }
         async public Task TestTask()
         {
-            var uuid = await _playerNetworkClient.GetAuthAsync( new AuthRequest() { Name = _name });
-            System.Console.WriteLine($"player:{_name} uuid:{new Guid(uuid.Value.ToByteArray())}");
+            var uuid = await _playerNetworkClient.GetAuthAsync(new AuthRequest() { Name = _name });
+            var guid = new Guid(uuid.Value.ToByteArray());
+            SetBearer(guid);
+            System.Console.WriteLine($"player:{_name} guid:{guid}");
             _ = Task.Run(() => CallRpcTask());
-            var responseStream = _playerNetworkClient.GetAsyncStreams(s_empty).ResponseStream;
+            var responseStream = _playerNetworkClient.ServerStreamServerEvents(s_empty).ResponseStream;
             while (await responseStream.MoveNext(default))
             {
-                GrpcStreamResponse current = responseStream.Current;
+                StreamServerEventsResponse current = responseStream.Current;
                 switch (current.ActionCase)
                 {
-                    case GrpcStreamResponse.ActionOneofCase.OnChat:
+                    case StreamServerEventsResponse.ActionOneofCase.OnChat:
                         System.Console.WriteLine($"OnChat Room:{current.OnChat.RoomInfo} player:{current.OnChat.OtherPlayer} message:{current.OnChat.Message}");
                         break;
-                    case GrpcStreamResponse.ActionOneofCase.OnJoin:
+                    case StreamServerEventsResponse.ActionOneofCase.OnJoin:
                         System.Console.WriteLine($"OnJoin Room:{current.OnJoin.RoomInfo} player:{current.OnJoin.OtherPlayer}");
                         break;
-                    case GrpcStreamResponse.ActionOneofCase.OnLeave:
+                    case StreamServerEventsResponse.ActionOneofCase.OnLeave:
                         System.Console.WriteLine($"OnLeave Room:{current.OnLeave.RoomInfo} player:{current.OnLeave.OtherPlayer}");
                         break;
-                    case GrpcStreamResponse.ActionOneofCase.OnClosed:
+                    case StreamServerEventsResponse.ActionOneofCase.OnClosed:
                         System.Console.WriteLine($"OnClosed Reason:{current.OnClosed.Reason} ");
                         break;
                 }
             }
             System.Console.WriteLine($"done.");
+            await _channel.ShutdownAsync();
         }
+
         async private Task CallRpcTask()
         {
             await Task.Delay(TimeSpan.FromSeconds(1));

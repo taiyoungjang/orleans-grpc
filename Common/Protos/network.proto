@@ -11,7 +11,7 @@ service PlayerNetwork {
   rpc GetAuth(AuthRequest) returns (UUID);
   rpc GetPlayerData(google.protobuf.Empty) returns (PlayerData);
   rpc AddPoint(AddPointRequest) returns(AddPointResponse);
-  rpc GetAsyncStreams (google.protobuf.Empty) returns (stream GrpcStreamResponse);
+  rpc ServerStreamServerEvents (google.protobuf.Empty) returns (stream StreamServerEventsResponse);
   rpc Join(JoinRequest) returns (JoinResponse);
   rpc Leave(LeaveRequest) returns (LeaveResponse);
   rpc Chat(ChatRequest) returns (ChatResponse);
@@ -70,7 +70,7 @@ message LeaveResponse{
 }
 
 
-message GrpcStreamResponse {
+message StreamServerEventsResponse {
   message OnChat{
     string roomInfo = 1;
     string otherPlayer = 2;
