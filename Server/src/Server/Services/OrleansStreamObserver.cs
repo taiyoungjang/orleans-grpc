@@ -8,33 +8,33 @@ namespace Server
     public class OrleansStreamObserver : Orleans.Streams.IAsyncObserver<StreamServerEventsResponse>
     {
         private readonly Guid _key;
-        private GrpcStreamResponseQueue _grpcStreamResponseQueue;
-        private readonly Orleans.Streams.IAsyncStream<StreamServerEventsResponse> _asyncStream;
+        private GrpcStreamResponseQueue _grpcPub;
+        private readonly Orleans.Streams.IAsyncStream<StreamServerEventsResponse> _pub;
         private System.Threading.CancellationToken _cancellationToken;
         public OrleansStreamObserver(
             Guid key,
-            Grpc.Core.IServerStreamWriter<StreamServerEventsResponse> serverStream,
-            Orleans.Streams.IAsyncStream<StreamServerEventsResponse> asyncStream, 
+            Grpc.Core.IServerStreamWriter<StreamServerEventsResponse> grpcPub,
+            Orleans.Streams.IAsyncStream<StreamServerEventsResponse> orleansPub, 
             System.Func<Task> disconnectAction,
             System.Threading.CancellationToken cancellationToken)
         {
             _key = key;
-            _grpcStreamResponseQueue = new(key, serverStream, disconnectAction, cancellationToken);
-            _asyncStream = asyncStream;
+            _grpcPub = new(key, grpcPub, disconnectAction, cancellationToken);
+            _pub = orleansPub;
             _cancellationToken = cancellationToken;
         }
 
         public Task WaitConsumerTask()
         {
-            _asyncStream.SubscribeAsync(this)
+            _pub.SubscribeAsync(this)
                 .ContinueWith( t =>
                 {
                     if (t.Exception == null)
                     {
-                        _grpcStreamResponseQueue.SetHandle(t.Result);
+                        _grpcPub.SetHandle(t.Result);
                     }
                 });
-            return _grpcStreamResponseQueue.ConsumerTask;
+            return _grpcPub.ConsumerTask;
         }
 
         public Task OnCompletedAsync() => Task.CompletedTask;
@@ -44,9 +44,9 @@ namespace Server
             return Task.CompletedTask;
         }
 
-        public Task OnNextAsync(StreamServerEventsResponse item, StreamSequenceToken token = null)
+        async public Task OnNextAsync(StreamServerEventsResponse item, StreamSequenceToken token = null)
         {
-            return _grpcStreamResponseQueue.WriteAsync(item, _cancellationToken).AsTask();
+            await _grpcPub.WriteAsync(item, _cancellationToken);
         }
     }
 }

@@ -11,11 +11,11 @@ using System.Threading.Channels;
 /// <typeparam name="T">Type of message written to the stream</typeparam>
 public class GrpcStreamResponseQueue
 {
-    private readonly Grpc.Core.IServerStreamWriter<game.StreamServerEventsResponse> _streamWriter;
+    private readonly Grpc.Core.IServerStreamWriter<game.StreamServerEventsResponse> _grpcPub;
     private readonly Task _consumer;
     public Task ConsumerTask => _consumer;
     private readonly Guid _guid;
-    private Orleans.Streams.StreamSubscriptionHandle<game.StreamServerEventsResponse> _orleansStreamHandle;
+    private Orleans.Streams.StreamSubscriptionHandle<game.StreamServerEventsResponse> _orleansSubHandle;
     private System.Func<Task> _disconnectAction;
 
     private readonly Channel<game.StreamServerEventsResponse> _channel = 
@@ -33,7 +33,7 @@ public class GrpcStreamResponseQueue
     )
     {
         _guid = guid;
-        _streamWriter = stream;
+        _grpcPub = stream;
         _disconnectAction = disconnectAction;
         _consumer = ConsumeTask(cancellationToken);
     }
@@ -44,7 +44,7 @@ public class GrpcStreamResponseQueue
             handle.UnsubscribeAsync();
             return;
         }
-        _orleansStreamHandle = handle;
+        _orleansSubHandle = handle;
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class GrpcStreamResponseQueue
         {
             await foreach (var message in _channel.Reader.ReadAllAsync(cancellationToken))
             {
-                await _streamWriter.WriteAsync(message);
+                await _grpcPub.WriteAsync(message);
                 if(message.ActionCase == game.StreamServerEventsResponse.ActionOneofCase.OnClosed)
                 {
                     //twice call
@@ -95,7 +95,7 @@ public class GrpcStreamResponseQueue
         }
         try
         {
-            await _orleansStreamHandle?.UnsubscribeAsync();
+            await _orleansSubHandle?.UnsubscribeAsync();
         }
         catch (Exception)
         {

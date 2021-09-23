@@ -16,8 +16,8 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     public static string s_streamProviderName = "playergrain";
     public static string s_streamNamespace = "default";
 
-    private Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> _streamToGrpc;
-    private Dictionary<string,StreamSubscriptionHandle<game.StreamServerEventsResponse>> _roomStreamObservers;
+    private Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> _stream;
+    private Dictionary<string,StreamSubscriptionHandle<game.StreamServerEventsResponse>> _roomSubscriptions;
     private List<Room> _joinedRoomList;
     private readonly IPersistentState<PlayerData> _state;
     public PlayerGrain(
@@ -30,7 +30,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     async public override Task OnActivateAsync()
     {
         _joinedRoomList = new();
-        _roomStreamObservers = new();
+        _roomSubscriptions = new();
         await base.OnActivateAsync();
     }
     public override Task OnDeactivateAsync()
@@ -38,9 +38,9 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         return base.OnDeactivateAsync();
     }
 
-    async ValueTask<Guid> IPlayerGrain.SetStreamAsync()
+    async ValueTask<Guid> IPlayerGrain.SetStreamAsync(Guid guid)
     {
-        if(_streamToGrpc != null && this is IPlayerGrain playerGrain)
+        if(_stream != null && this is IPlayerGrain playerGrain)
         {
             StreamServerEventsResponse grpcStreamResponse = new()
             {
@@ -49,7 +49,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
                     Reason = "Duplicated"
                 }
             };
-            await _streamToGrpc.OnNextAsync(grpcStreamResponse);
+            await _stream.OnNextAsync(grpcStreamResponse);
             await playerGrain.EndOfAsyncStreamAsync();
         }
         if(string.IsNullOrEmpty(_state.State.Name))
@@ -57,9 +57,8 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
             _state.State.Name = this.GrainReference.GrainIdentity.PrimaryKeyString;
             await _state.WriteStateAsync();
         }
-        Guid guid = Guid.Parse(_state.Etag);
         var streamProvider = GetStreamProvider(s_streamProviderName);
-        _streamToGrpc = streamProvider.GetStream<game.StreamServerEventsResponse>(guid, s_streamNamespace);
+        _stream = streamProvider.GetStream<game.StreamServerEventsResponse>(guid, s_streamNamespace);
         return guid;
     }
     async ValueTask IPlayerGrain.EndOfAsyncStreamAsync()
@@ -69,7 +68,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
             var room = GrainFactory.GetGrain<IRoomGrain>(_joinedRoomList[i].Name);
             await room.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
         }
-        foreach(var pair in _roomStreamObservers)
+        foreach(var pair in _roomSubscriptions)
         {
             try
             {
@@ -81,8 +80,8 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
             }
         }
         _joinedRoomList.Clear();
-        _roomStreamObservers.Clear();
-        _streamToGrpc = null;
+        _roomSubscriptions.Clear();
+        _stream = null;
     }
 
     async ValueTask<bool> IPlayerGrain.ChatAsync(string room, string message)
@@ -97,11 +96,11 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         var joinRet = await roomGrain.JoinAsync(this.GrainReference.GrainIdentity.PrimaryKeyString, _state.State.Name);
         if(joinRet.success)
         {
-            var stream = this.GetStreamProvider(RoomGrain.s_streamProviderName)
+            var roomStream = this.GetStreamProvider(RoomGrain.s_streamProviderName)
                 .GetStream<StreamServerEventsResponse>(joinRet.streamGuid, RoomGrain.s_streamNamespace);
 
-            var handle = await stream.SubscribeAsync(new RoomStreamObserver(room, this));
-            _roomStreamObservers.Add(room, handle);
+            var handle = await roomStream.SubscribeAsync(new RoomStreamObserver(room, _stream));
+            _roomSubscriptions.Add(room, handle);
 
             _joinedRoomList.Add(new() { Name = room });
             return (true, joinRet.players);
@@ -111,9 +110,10 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     async ValueTask<bool> IPlayerGrain.LeaveAsync(string room)
     {
         var roomGrain = GrainFactory.GetGrain<IRoomGrain>(room);
-        var leaveRet = roomGrain.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
+        await roomGrain.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
         {
-            if( _roomStreamObservers.TryGetValue(room, out var observer))
+            _joinedRoomList.RemoveAll(t => t.Name.Equals(room));
+            if( _roomSubscriptions.Remove(room, out var observer))
             {
                 await observer.UnsubscribeAsync();
             }
@@ -135,10 +135,5 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         _state.State.Point += point;
         await _state.WriteStateAsync();
         return _state.State.Point;
-    }
-
-    async public Task OnObserveItemAsync(game.StreamServerEventsResponse grpcStreamResponse, StreamSequenceToken token)
-    {
-        await _streamToGrpc.OnNextAsync(grpcStreamResponse, token);
     }
 }

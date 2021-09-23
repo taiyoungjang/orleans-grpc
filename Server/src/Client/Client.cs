@@ -85,30 +85,33 @@ namespace Client
             await Task.Delay(TimeSpan.FromSeconds(1));
             var getPlayerData = await _playerNetworkClient.GetPlayerDataAsync(s_empty);
             System.Console.WriteLine($"GetPlayerDataAsync: point:{getPlayerData.Point}");
-            var addPoint = new System.Random().Next(1, 100);
-            var addPointAsync = await _playerNetworkClient.AddPointAsync(new() { AddPoint = addPoint });
-            System.Console.WriteLine($"AddPointAsync: addPoint:{addPoint} AddedPoint:{addPointAsync.AddedPoint}");
-
-            var availableRoomResult = await _playerNetworkClient.GetAvailableRoomListAsync(s_empty);
-            System.Console.WriteLine($"GetAvailableRoomListAsync: {string.Join(',', availableRoomResult.Rooms.Select(t => t.Name))}");
-            string roomName = availableRoomResult.Rooms.Select(t=>t.Name).FirstOrDefault();
-            string message = $"blah-{Guid.NewGuid()}";
-            if(string.IsNullOrEmpty(roomName))
+            do
             {
-                roomName = $"room-{Guid.NewGuid()}";
-            }
+                var addPoint = new System.Random().Next(1, 100);
+                var addPointAsync = await _playerNetworkClient.AddPointAsync(new() { AddPoint = addPoint });
+                System.Console.WriteLine($"AddPointAsync: addPoint:{addPoint} AddedPoint:{addPointAsync.AddedPoint}");
 
-            var joinResult = await _playerNetworkClient.JoinAsync(new() { Room = roomName });
-            System.Console.WriteLine($"JoinAsync: {roomName} already joined: count:{joinResult.Players.Count} names:{string.Join(',',joinResult.Players)}");
+                var availableRoomResult = await _playerNetworkClient.GetAvailableRoomListAsync(s_empty);
+                System.Console.WriteLine($"GetAvailableRoomListAsync: {string.Join(',', availableRoomResult.Rooms.Select(t => t.Name))}");
+                string roomName = availableRoomResult.Rooms.Select(t => t.Name).FirstOrDefault();
+                string message = $"blah-{Guid.NewGuid()}";
+                if (string.IsNullOrEmpty(roomName))
+                {
+                    roomName = $"room-{Guid.NewGuid()}";
+                }
 
-            System.Console.WriteLine($"ChatAsync: {roomName}");
-            await _playerNetworkClient.ChatAsync(new() { Room = roomName, Message = message });
+                var joinResult = await _playerNetworkClient.JoinAsync(new() { Room = roomName });
+                System.Console.WriteLine($"JoinAsync: {roomName} already joined: count:{joinResult.Players.Count} names:{string.Join(',', joinResult.Players)}");
 
-            var result = await _playerNetworkClient.GetJoinedRoomListAsync(s_empty);
-            System.Console.WriteLine($"GetJoinedRoomListAsync: {string.Join(',', result.Rooms.Select(t => t.Name))}");
+                System.Console.WriteLine($"ChatAsync: {roomName}");
+                await _playerNetworkClient.ChatAsync(new() { Room = roomName, Message = message });
 
-            var leave = await _playerNetworkClient.LeaveAsync(new() {Room = roomName });
-            System.Console.WriteLine($"LeaveAsync: room:{roomName} {leave.Success}");
+                var result = await _playerNetworkClient.GetJoinedRoomListAsync(s_empty);
+                System.Console.WriteLine($"GetJoinedRoomListAsync: {string.Join(',', result.Rooms.Select(t => t.Name))}");
+
+                var leave = await _playerNetworkClient.LeaveAsync(new() { Room = roomName });
+                System.Console.WriteLine($"LeaveAsync: room:{roomName} {leave.Success}");
+            } while (true);
         }
     }
 }

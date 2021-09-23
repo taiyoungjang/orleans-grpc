@@ -8,7 +8,7 @@ using Orleans;
 public interface IPlayerGrain : IGrainWithStringKey
 {
     ValueTask EndOfAsyncStreamAsync();
-    ValueTask<Guid> SetStreamAsync();
+    ValueTask<Guid> SetStreamAsync(Guid guid);
 
     ValueTask<int> AddPointAsync(int point);
 

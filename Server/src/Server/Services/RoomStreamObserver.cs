@@ -2,14 +2,18 @@ using System;
 using System.Threading.Tasks;
 using Orleans.Streams;
 
-public class RoomStreamObserver : IAsyncObserver<game.StreamServerEventsResponse>
+public class RoomStreamObserver : IAsyncObserver<game.StreamServerEventsResponse>, IDisposable
 {
     private readonly string _roomName;
-    private PlayerGrain _playerGrain;
-    public RoomStreamObserver(string roomName, PlayerGrain playerGrain)
+    private readonly Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> _playerStream;
+    public RoomStreamObserver(string roomName, Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> playerStream)
     {
         _roomName = roomName;
-        _playerGrain = playerGrain;
+        _playerStream = playerStream;
+    }
+    public void Dispose()
+    { 
+
     }
 
     public Task OnCompletedAsync() => Task.CompletedTask;
@@ -19,8 +23,8 @@ public class RoomStreamObserver : IAsyncObserver<game.StreamServerEventsResponse
         return Task.CompletedTask;
     }
 
-    public Task OnNextAsync(game.StreamServerEventsResponse item, StreamSequenceToken token = null)
+    async public Task OnNextAsync(game.StreamServerEventsResponse item, StreamSequenceToken token = null)
     {
-        return _playerGrain.OnObserveItemAsync(item, token);
+        await _playerStream.OnNextAsync(item, token);
     }
 }

@@ -309,5 +309,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa47da64f69ac924d84389f2dc0c7a3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  host: kr-trunk.abyss.stairgames.com
+  host: localhost.abyss.stairgames.com
   port: 5000
