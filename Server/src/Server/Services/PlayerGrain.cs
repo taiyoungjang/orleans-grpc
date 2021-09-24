@@ -13,11 +13,11 @@ using Orleans.Runtime;
 public class PlayerGrain : Orleans.Grain, IPlayerGrain
 {
     private readonly ILogger<PlayerGrain> _logger;
-    public static string s_streamNamespace = $"{nameof(PlayerGrain)}-azurequeueprovider-0".ToLower();
+    public static string GetPlayerQueueStreamNamespace(long regionIndex) => $"playergrain-azurequeueprovider-{regionIndex}";
+    public static string GetChatRoomQueueStreamNamespace(long regionIndex) => $"chatroomgrain-azurequeueprovider-{regionIndex}";
 
     private Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> _stream;
-    private Dictionary<string,StreamSubscriptionHandle<game.StreamServerEventsResponse>> _roomSubscriptions;
-    private List<Room> _joinedRoomList;
+    private StreamSubscriptionHandle<game.StreamServerEventsResponse> _chatRoomSubscriptionHandle;
     private readonly IPersistentState<PlayerData> _state;
     public PlayerGrain(
         [PersistentState("player",storageName:"player")] IPersistentState<PlayerData> state,
@@ -28,8 +28,6 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
     }
     async public override Task OnActivateAsync()
     {
-        _joinedRoomList = new();
-        _roomSubscriptions = new();
         await base.OnActivateAsync();
     }
     public override Task OnDeactivateAsync()
@@ -57,71 +55,61 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
             await _state.WriteStateAsync();
         }
         var streamProvider = GetStreamProvider(Server.Program.s_streamProviderName);
-        _stream = streamProvider.GetStream<game.StreamServerEventsResponse>(guid, s_streamNamespace);
+        var regionIndex = this.GrainReference.GrainIdentity.GetPrimaryKeyLong(out var ext);
+        _stream = streamProvider.GetStream<game.StreamServerEventsResponse>(guid, GetPlayerQueueStreamNamespace(regionIndex));
         return guid;
     }
     async ValueTask IPlayerGrain.EndOfAsyncStreamAsync()
     {
-        for (int i = 0; i < _joinedRoomList.Count; ++i)
-        {
-            var room = GrainFactory.GetGrain<IRoomGrain>(_joinedRoomList[i].Name);
-            await room.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
-        }
-        foreach(var pair in _roomSubscriptions)
+        if( _chatRoomSubscriptionHandle != null)
         {
             try
             {
-                await pair.Value.UnsubscribeAsync();
+                await _chatRoomSubscriptionHandle.UnsubscribeAsync();
+                _chatRoomSubscriptionHandle = null;
             }
             catch (Exception)
             {
-
             }
         }
-        _joinedRoomList.Clear();
-        _roomSubscriptions.Clear();
         _stream = null;
     }
 
-    async ValueTask<bool> IPlayerGrain.ChatAsync(string room, string message)
+    async ValueTask<bool> IPlayerGrain.ChatAsync(string message)
     {
-        var roomGrain = GrainFactory.GetGrain<IRoomGrain>(room);
-        return await roomGrain.ChatAsync(this.GrainReference.GrainIdentity.PrimaryKeyString, message);
-    }
-
-    async ValueTask<(bool ret, List<string> players)> IPlayerGrain.JoinAsync(string room)
-    {
-        var roomGrain = GrainFactory.GetGrain<IRoomGrain>(room);
-        var joinRet = await roomGrain.JoinAsync(this.GrainReference.GrainIdentity.PrimaryKeyString, _state.State.Name);
-        if(joinRet.success)
+        var regionIndex = this.GrainReference.GrainIdentity.GetPrimaryKeyLong(out var _);
+        var roomStream = this.GetStreamProvider(Server.Program.s_streamProviderName)
+            .GetStream<StreamServerEventsResponse>(Guid.Empty, GetChatRoomQueueStreamNamespace(regionIndex));
+        StreamServerEventsResponse grpcStreamResponse = new()
         {
-            var roomStream = this.GetStreamProvider(Server.Program.s_streamProviderName)
-                .GetStream<StreamServerEventsResponse>(joinRet.streamGuid, RoomGrain.s_streamNamespace);
-
-            var handle = await roomStream.SubscribeAsync(new RoomStreamObserver(room, _stream));
-            _roomSubscriptions.Add(room, handle);
-
-            _joinedRoomList.Add(new() { Name = room });
-            return (true, joinRet.players);
-        }
-        return (false,null);
-    }
-    async ValueTask<bool> IPlayerGrain.LeaveAsync(string room)
-    {
-        var roomGrain = GrainFactory.GetGrain<IRoomGrain>(room);
-        await roomGrain.LeaveAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
-        {
-            _joinedRoomList.RemoveAll(t => t.Name.Equals(room));
-            if( _roomSubscriptions.Remove(room, out var observer))
+            OnChat = new()
             {
-                await observer.UnsubscribeAsync();
+                RoomInfo = $"chatroom{regionIndex}",
+                OtherPlayer = _state.State.Name,
+                Message = message
             }
-        }
+        };
+        await roomStream.OnNextAsync(grpcStreamResponse);
         return true;
     }
-    ValueTask<ImmutableList<game.Room>> IPlayerGrain.GetJoinedRoomListAsync()
+
+    async ValueTask<bool> IPlayerGrain.JoinChatRoomAsync()
     {
-        return ValueTask.FromResult(_joinedRoomList.ToImmutableList());
+        var regionIndex = this.GrainReference.GrainIdentity.GetPrimaryKeyLong(out var _);
+        var roomStream = this.GetStreamProvider(Server.Program.s_streamProviderName)
+            .GetStream<StreamServerEventsResponse>(Guid.Empty, GetChatRoomQueueStreamNamespace(regionIndex));
+        var handle = await roomStream.SubscribeAsync(new RoomStreamObserver(_stream));
+        _chatRoomSubscriptionHandle = handle;
+        return true;
+    }
+    async ValueTask<bool> IPlayerGrain.LeaveChatRoomAsync()
+    {
+        if(_chatRoomSubscriptionHandle != null)
+        {
+            await _chatRoomSubscriptionHandle.UnsubscribeAsync();
+            _chatRoomSubscriptionHandle = null;
+        }
+        return true;
     }
 
     ValueTask<PlayerData> IPlayerGrain.GetPlayerDataAsync()

@@ -16,6 +16,7 @@ namespace Server
     public class Program
     {
         public static string s_streamProviderName = "AzureQueueProvider";
+        public static List<long> s_regionList = new List<long>() { 1,2 };
         [STAThread]
         public static void Main(string[] args)
         {
@@ -41,16 +42,17 @@ namespace Server
                           ob => ob.Configure(options =>
                           {
                               options.ConnectionString = connectionString;
-                              options.QueueNames = new List<string> 
-                              { 
-                                  PlayerGrain.s_streamNamespace,
-                                  RoomGrain.s_streamNamespace
-                              };
+                              options.QueueNames = new List<string>();
+                              options.QueueNames.Add(PlayerGrain.GetPlayerQueueStreamNamespace(0));
+                              options.QueueNames.Add(PlayerGrain.GetPlayerQueueStreamNamespace(1));
+                              options.QueueNames.Add(PlayerGrain.GetPlayerQueueStreamNamespace(2));
+                              options.QueueNames.Add(PlayerGrain.GetChatRoomQueueStreamNamespace(1));
+                              options.QueueNames.Add(PlayerGrain.GetChatRoomQueueStreamNamespace(2));
                           }));
                         configurator.ConfigureCacheSize(1024);
                         configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
                         {
-                            options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(200);
+                            options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(500);
                         }));
                     });
                     siloBuilder.AddAzureBlobGrainStorage("PubSubStore", options =>

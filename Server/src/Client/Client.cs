@@ -14,10 +14,13 @@ namespace Client
 
         private game.PlayerNetwork.PlayerNetworkClient _playerNetworkClient;
         private string _name;
+        long _regionIndex;
         private GrpcChannel _channel;
         private Metadata.Entry _bearer;
-        public Client(string name)
+        private Metadata.Entry _regionMeta;
+        public Client(string name, long regionIndex)
         {
+            _regionIndex = regionIndex;
             var credentials = CallCredentials.FromInterceptor(AsyncAuthInterceptor);
             //System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "abyss-kr.json");
             //var googleCredentials = await Grpc.Auth.GoogleGrpcCredentials.GetApplicationDefaultAsync();
@@ -32,6 +35,7 @@ namespace Client
             _playerNetworkClient = new game.PlayerNetwork.PlayerNetworkClient(_channel);
             _name = name;
             _bearer = null;
+            _regionMeta = new Metadata.Entry("region",_regionIndex.ToString());
         }
         private void SetBearer(Guid guid)
         {
@@ -46,6 +50,10 @@ namespace Client
             if (_bearer != null)
             {
                 metadata.Add(_bearer);
+            }
+            if(_regionMeta != null)
+            {
+                metadata.Add(_regionMeta);
             }
             return Task.CompletedTask;
         }
@@ -65,12 +73,6 @@ namespace Client
                     case StreamServerEventsResponse.ActionOneofCase.OnChat:
                         System.Console.WriteLine($"OnChat Room:{current.OnChat.RoomInfo} player:{current.OnChat.OtherPlayer} message:{current.OnChat.Message}");
                         break;
-                    case StreamServerEventsResponse.ActionOneofCase.OnJoin:
-                        System.Console.WriteLine($"OnJoin Room:{current.OnJoin.RoomInfo} player:{current.OnJoin.OtherPlayer}");
-                        break;
-                    case StreamServerEventsResponse.ActionOneofCase.OnLeave:
-                        System.Console.WriteLine($"OnLeave Room:{current.OnLeave.RoomInfo} player:{current.OnLeave.OtherPlayer}");
-                        break;
                     case StreamServerEventsResponse.ActionOneofCase.OnClosed:
                         System.Console.WriteLine($"OnClosed Reason:{current.OnClosed.Reason} ");
                         break;
@@ -83,34 +85,28 @@ namespace Client
         async private Task CallRpcTask()
         {
             await Task.Delay(TimeSpan.FromSeconds(1));
-            var getPlayerData = await _playerNetworkClient.GetPlayerDataAsync(s_empty);
-            System.Console.WriteLine($"GetPlayerDataAsync: point:{getPlayerData.Point}");
+            var getPlayerDataList = await _playerNetworkClient.GetRegionPlayerDataListAsync(s_empty);
+            System.Console.WriteLine($"GetRegionPlayerDataListAsync: getPlayerDataList.Count:{getPlayerDataList.PlayerDataList_.Count}");
+
+            var loginPlayerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex});
+            System.Console.WriteLine($"LoginPlayerData: point:{loginPlayerData.Point}");
             do
             {
                 var addPoint = new System.Random().Next(1, 100);
                 var addPointAsync = await _playerNetworkClient.AddPointAsync(new() { AddPoint = addPoint });
                 System.Console.WriteLine($"AddPointAsync: addPoint:{addPoint} AddedPoint:{addPointAsync.AddedPoint}");
 
-                var availableRoomResult = await _playerNetworkClient.GetAvailableRoomListAsync(s_empty);
-                System.Console.WriteLine($"GetAvailableRoomListAsync: {string.Join(',', availableRoomResult.Rooms.Select(t => t.Name))}");
-                string roomName = availableRoomResult.Rooms.Select(t => t.Name).FirstOrDefault();
                 string message = $"blah-{Guid.NewGuid()}";
-                if (string.IsNullOrEmpty(roomName))
-                {
-                    roomName = $"room-{Guid.NewGuid()}";
-                }
 
-                var joinResult = await _playerNetworkClient.JoinAsync(new() { Room = roomName });
-                System.Console.WriteLine($"JoinAsync: {roomName} already joined: count:{joinResult.Players.Count} names:{string.Join(',', joinResult.Players)}");
+                var joinResult = await _playerNetworkClient.JoinChatRoomAsync(s_empty);
+                System.Console.WriteLine($"JoinChatRoomAsync: RegionIndex:{_regionIndex}");
 
-                System.Console.WriteLine($"ChatAsync: {roomName}");
-                await _playerNetworkClient.ChatAsync(new() { Room = roomName, Message = message });
+                System.Console.WriteLine($"ChatAsync: message:{message}");
+                await _playerNetworkClient.ChatAsync(new() { Message = message} );
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
-                var result = await _playerNetworkClient.GetJoinedRoomListAsync(s_empty);
-                System.Console.WriteLine($"GetJoinedRoomListAsync: {string.Join(',', result.Rooms.Select(t => t.Name))}");
-                var leave = await _playerNetworkClient.LeaveAsync(new() { Room = roomName });
-                System.Console.WriteLine($"LeaveAsync: room:{roomName} {leave.Success}");
+                var leave = await _playerNetworkClient.LeaveChatRoomAsync(s_empty);
+                System.Console.WriteLine($"LeaveChatRoomAsync: room:{_regionIndex} {leave.Success}");
             } while (true);
         }
     }

@@ -9,12 +9,17 @@ namespace game
     {
         async public static Task Main(string[] args)
         {
-            string playerName = "player-1";
+            string playerName = "player1";
+            long regionIndex = new Random().Next(1,3);
             if(args.Length > 0)
             {
                 playerName = args[0];
             }
-            var client = new Client.Client(playerName);
+            if(args.Length > 1 && long.TryParse(args[1], out regionIndex))
+            {
+                
+            }
+            var client = new Client.Client(playerName, regionIndex: regionIndex);
             await client.TestTask();
             await Task.Delay(TimeSpan.FromSeconds(5));
         }

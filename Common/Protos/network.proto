@@ -9,31 +9,49 @@ package playerNetwork;
 
 service PlayerNetwork {
   rpc GetAuth(AuthRequest) returns (UUID);
-  rpc GetPlayerData(google.protobuf.Empty) returns (PlayerData);
+  rpc GetRegionPlayerDataList(google.protobuf.Empty) returns (PlayerDataList);
+  rpc LoginPlayerData(RegionData) returns (PlayerData);
   rpc AddPoint(AddPointRequest) returns(AddPointResponse);
   rpc ServerStreamServerEvents (google.protobuf.Empty) returns (stream StreamServerEventsResponse);
-  rpc Join(JoinRequest) returns (JoinResponse);
-  rpc Leave(LeaveRequest) returns (LeaveResponse);
+  rpc JoinChatRoom(google.protobuf.Empty) returns (JoinChatRoomResponse);
+  rpc LeaveChatRoom(google.protobuf.Empty) returns (LeaveChatRoomResponse);
   rpc Chat(ChatRequest) returns (ChatResponse);
-  rpc GetAvailableRoomList(google.protobuf.Empty) returns (RoomList);
-  rpc GetJoinedRoomList(google.protobuf.Empty) returns (RoomList);
+  rpc GetTopRankList(google.protobuf.Empty) returns (RankList);
 }
 
 message UUID{
   bytes value = 1;
 }
 
+message RegionData{
+    int64 regionIndex = 1;
+}
+
 message PlayerData{
+    int64 regionIndex = 1;
+    string name = 2;
+    int32 point = 3;
+}
+
+message RankData{
     string name = 1;
     int32 point = 2;
 }
 
-message Room{
-  string name = 1;
+message RankList{
+    repeated RankData ranks = 1;
+}
+
+message ChatRoom{
+  int32 regionIndex = 1;
+}
+
+message PlayerDataList{
+  repeated PlayerData playerDataList = 1;
 }
 
 message RoomList{
-  repeated Room rooms = 1;
+  repeated ChatRoom chatRooms = 1;
 }
 
 message AuthRequest{
@@ -49,23 +67,15 @@ message AddPointResponse{
 }
 
 message ChatRequest{
-  string room = 1;
   string message = 2;
 }
 message ChatResponse{
   bool success = 1;
 }
-message JoinRequest{
-  string room = 1;
-}
-message JoinResponse{
+message JoinChatRoomResponse{
   bool success = 1;
-  repeated string players = 2;
 }
-message LeaveRequest{
-  string room = 1;
-}
-message LeaveResponse{
+message LeaveChatRoomResponse{
   bool success = 1;
 }
 
@@ -76,22 +86,12 @@ message StreamServerEventsResponse {
     string otherPlayer = 2;
     string message = 3;
   }
-  message OnJoin{
-    string roomInfo = 1;
-    string otherPlayer = 2;
-  }
-  message OnLeave{
-    string roomInfo = 1;
-    string otherPlayer = 2;
-  }
   message OnClosed{
     string reason = 1;
   }
   oneof action {
-    OnJoin onJoin = 1;
-    OnLeave onLeave = 2;
-    OnChat onChat = 3;
-    OnClosed onClosed = 4;
+    OnChat onChat = 1;
+    OnClosed onClosed = 2;
   }
 }
 

@@ -11,6 +11,7 @@ public class NewBehaviourScript : MonoBehaviour
     System.Threading.CancellationTokenSource cancellationTokenSource;
     public string host = "localhost.abyss.stairgames.com";
     public int port = 500;
+    public long _regionIndex = 1;
     string _playerName = "unity1";
     string token;
     game.PlayerNetwork.PlayerNetworkClient _playerNetworkClient;
@@ -18,7 +19,7 @@ public class NewBehaviourScript : MonoBehaviour
     async void Start()
     {
         cancellationTokenSource = new System.Threading.CancellationTokenSource();
-        var client = new NetworkClient(host, port, _playerName, cancellationTokenSource.Token);
+        var client = new NetworkClient(host, port, _playerName, _regionIndex, cancellationTokenSource.Token);
         await client.TestTask();
     }
 

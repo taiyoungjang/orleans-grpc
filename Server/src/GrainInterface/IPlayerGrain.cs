@@ -5,20 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
 using Orleans;
-public interface IPlayerGrain : IGrainWithStringKey
+public interface IPlayerGrain : IGrainWithIntegerCompoundKey
 {
     ValueTask EndOfAsyncStreamAsync();
     ValueTask<Guid> SetStreamAsync(Guid guid);
 
     ValueTask<int> AddPointAsync(int point);
 
-    ValueTask<bool> ChatAsync(string room, string message);
+    ValueTask<bool> ChatAsync(string message);
 
-    ValueTask<(bool ret, List<string> players)> JoinAsync(string room);
-    ValueTask<bool> LeaveAsync(string room);
+    ValueTask<bool> JoinChatRoomAsync();
+    ValueTask<bool> LeaveChatRoomAsync();
 
     ValueTask<game.PlayerData> GetPlayerDataAsync();
-
-    ValueTask<ImmutableList<game.Room>> GetJoinedRoomListAsync();
-
 }

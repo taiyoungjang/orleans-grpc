@@ -10,11 +10,14 @@ public class NetworkClient
 
     private game.PlayerNetwork.PlayerNetworkClient _playerNetworkClient;
     private string _name;
+    private long _regionIndex;
     private System.Threading.CancellationToken _token;
     private Metadata.Entry _bearer;
+    private Metadata.Entry _regionMeta;
     private Grpc.Core.Channel _channel;
-    public NetworkClient(string host, int port, string name, System.Threading.CancellationToken token)
+    public NetworkClient(string host, int port, string name, long regionIndex, System.Threading.CancellationToken token)
     {
+        _regionIndex = regionIndex;
         var credentials = CallCredentials.FromInterceptor(AsyncAuthInterceptor);
         //System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "abyss-kr.json");
         //var googleCredentials = await Grpc.Auth.GoogleGrpcCredentials.GetApplicationDefaultAsync();
@@ -25,6 +28,7 @@ public class NetworkClient
         _name = name;
         _token = token;
         _bearer = null;
+        _regionMeta = new Metadata.Entry("region", _regionIndex.ToString());
     }
     private void SetBearer(Guid guid)
     {
@@ -39,6 +43,10 @@ public class NetworkClient
         if (_bearer != null)
         {
             metadata.Add(_bearer);
+        }
+        if (_regionMeta != null)
+        {
+            metadata.Add(_regionMeta);
         }
         return Task.CompletedTask;
     }
@@ -57,12 +65,6 @@ public class NetworkClient
                 case StreamServerEventsResponse.ActionOneofCase.OnChat:
                     UnityEngine.Debug.Log($"OnChat Room:{current.OnChat.RoomInfo} player:{current.OnChat.OtherPlayer} message:{current.OnChat.Message}");
                     break;
-                case StreamServerEventsResponse.ActionOneofCase.OnJoin:
-                    UnityEngine.Debug.Log($"OnJoin Room:{current.OnJoin.RoomInfo} player:{current.OnJoin.OtherPlayer}");
-                    break;
-                case StreamServerEventsResponse.ActionOneofCase.OnLeave:
-                    UnityEngine.Debug.Log($"OnLeave Room:{current.OnLeave.RoomInfo} player:{current.OnLeave.OtherPlayer}");
-                    break;
                 case StreamServerEventsResponse.ActionOneofCase.OnClosed:
                     UnityEngine.Debug.Log($"OnClosed Reason:{current.OnClosed.Reason} ");
                     break;
@@ -73,28 +75,21 @@ public class NetworkClient
     async private Task CallRpcTask()
     {
         await Task.Delay(TimeSpan.FromSeconds(1));
-        var getPlayerData = await _playerNetworkClient.GetPlayerDataAsync(s_empty);
-        UnityEngine.Debug.Log($"GetPlayerDataAsync: point:{getPlayerData.Point}");
+        var getPlayerDataList = await _playerNetworkClient.GetRegionPlayerDataListAsync(s_empty);
+        UnityEngine.Debug.Log($"GetRegionPlayerDataListAsync: getPlayerDataList.Count:{getPlayerDataList.PlayerDataList_.Count}");
+        var loginPlayerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
+        UnityEngine.Debug.Log($"GetPlayerDataAsync: point:{loginPlayerData.Point}");
         var addPoint = new System.Random().Next(1, 100);
         var addPointAsync = await _playerNetworkClient.AddPointAsync(new AddPointRequest() { AddPoint = addPoint });
         UnityEngine.Debug.Log($"AddPointAsync: addPoint:{addPoint} AddedPoint:{addPointAsync.AddedPoint}");
 
-        var availableRoomResult = await _playerNetworkClient.GetAvailableRoomListAsync(s_empty);
-        UnityEngine.Debug.Log($"GetAvailableRoomListAsync: {string.Join(",", availableRoomResult.Rooms.Select(t => t.Name))}");
-        string roomName = availableRoomResult.Rooms.Select(t => t.Name).FirstOrDefault();
         string message = $"blah-{Guid.NewGuid()}";
-        if (string.IsNullOrEmpty(roomName))
-        {
-            roomName = $"room-{Guid.NewGuid()}";
-        }
 
-        var joinResult = await _playerNetworkClient.JoinAsync(new JoinRequest() { Room = roomName });
-        UnityEngine.Debug.Log($"JoinAsync: {roomName} already joined: count:{joinResult.Players.Count} names:{string.Join(",", joinResult.Players)}");
+        var joinResult = await _playerNetworkClient.JoinChatRoomAsync(s_empty);
+        UnityEngine.Debug.Log($"JoinChatRoomAsync: RegionIndex:{_regionIndex}");
 
-        UnityEngine.Debug.Log($"ChatAsync: {roomName}");
-        await _playerNetworkClient.ChatAsync(new ChatRequest() { Room = roomName, Message = message });
+        UnityEngine.Debug.Log($"ChatAsync: {message}");
+        await _playerNetworkClient.ChatAsync(new ChatRequest() {  Message = message });
 
-        var result = await _playerNetworkClient.GetJoinedRoomListAsync(s_empty);
-        UnityEngine.Debug.Log($"GetJoinedRoomListAsync: {string.Join(",", result.Rooms.Select(t => t.Name))}");
     }
 }

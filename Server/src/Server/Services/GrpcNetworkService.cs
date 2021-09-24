@@ -19,6 +19,8 @@ namespace Server
         private readonly Orleans.IClusterClient _clusterClient;
         private static game.RoomList s_emptyRoomList = new();
         private readonly IDistributedCache _cache;
+        private readonly static string s_region = "region";
+        private readonly static string s_authorization = "authorization";
         public GrpcNetworkService(Orleans.IClusterClient clusterClient, ILogger<GrpcNetworkService> logger, IDistributedCache cache)
         {
             _clusterClient = clusterClient;
@@ -30,13 +32,11 @@ namespace Server
             Guid guid;
             try
             {
-                var player = _clusterClient.GetGrain<IPlayerGrain>(request.Name);
                 if(!Guid.TryParse( await _cache.GetStringAsync($"player-{request.Name}"), out guid))
                 {
                     guid = System.Guid.NewGuid();
                     await _cache.SetStringAsync($"player-{request.Name}", guid.ToString());
                 }
-                guid = await player.SetStreamAsync(guid);
                 await _cache.SetStringAsync(guid.ToString(), request.Name);
             }
             catch (Exception ex)
@@ -48,23 +48,34 @@ namespace Server
             return ret;
         }
 
-        async private Task<string> GetContextName(ServerCallContext context)
+        async private Task<(string name,int regionIndex)> GetContextName(ServerCallContext context)
         {
-            return await _cache.GetStringAsync(context.RequestHeaders.Get("authorization").Value);
+            string name = await _cache.GetStringAsync(context.RequestHeaders.Get(s_authorization).Value);
+            int regionIndex = 0;
+            if( int.TryParse(context.RequestHeaders.Get(s_region).Value, out regionIndex))
+            {
+
+            }
+            return (name, regionIndex);
         }
         async private Task<IPlayerGrain> GetPlayer(ServerCallContext context)
         {
-            var name = await GetContextName(context);
+            var (name,regionIndex) = await GetContextName(context);
             if (string.IsNullOrEmpty(name))
             {
                 return null;
             }
-            return _clusterClient.GetGrain<IPlayerGrain>(name);
+            return _clusterClient.GetGrain<IPlayerGrain>(regionIndex,name);
         }
 
         async public override Task ServerStreamServerEvents(global::Google.Protobuf.WellKnownTypes.Empty empty, IServerStreamWriter<StreamServerEventsResponse> responseStreamWriter, ServerCallContext context)
         {
-            string strGuid = context.RequestHeaders.Get("authorization").Value;
+            string strGuid = context.RequestHeaders.Get(s_authorization).Value;
+            long regionIndex = 0;
+            if (long.TryParse(context.RequestHeaders.Get(s_region).Value, out regionIndex))
+            {
+
+            }
             var player = await GetPlayer(context);
             if (player is null)
             {
@@ -77,18 +88,22 @@ namespace Server
             }
             var playerStream = _clusterClient
                 .GetStreamProvider(Server.Program.s_streamProviderName)
-                .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.s_streamNamespace);
+                .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.GetPlayerQueueStreamNamespace(regionIndex));
             var streamObserver = new OrleansStreamObserver(guid, responseStreamWriter, playerStream, EndOfAsyncStream, context.CancellationToken);
             await streamObserver.WaitConsumerTask();
         }
 
-        async public override Task<PlayerData> GetPlayerData(Empty request, ServerCallContext context)
+        async public override Task<PlayerData> LoginPlayerData(RegionData request, ServerCallContext context)
         {
-            var player = await GetPlayer(context);
+            string strGuid = context.RequestHeaders.Get(s_authorization).Value;
+            var (name, regionIndex) = await GetContextName(context);
+            var player = _clusterClient.GetGrain<IPlayerGrain>(request.RegionIndex, name);
             if (player is null)
             {
                 return default;
             }
+            Guid guid = Guid.Parse(strGuid);
+            guid = await player.SetStreamAsync(guid);
             return await player.GetPlayerDataAsync();
         }
         async public override Task<AddPointResponse> AddPoint(AddPointRequest request, ServerCallContext context)
@@ -108,49 +123,50 @@ namespace Server
             {
                 return default;
             }
-            var ret = await player.ChatAsync(room: request.Room, message: request.Message);
+            var ret = await player.ChatAsync(message: request.Message);
             return new() { Success = ret };
         }
-        async public override Task<JoinResponse> Join(JoinRequest request, ServerCallContext context)
+        async public override Task<JoinChatRoomResponse> JoinChatRoom(Empty request, ServerCallContext context)
         {
             var player = await GetPlayer(context);
             if (player is null)
             {
                 return default;
             }
-            var joinRet = await player.JoinAsync(room: request.Room);
-            JoinResponse ret = new() { Success = joinRet.ret};
-            ret.Players.AddRange(joinRet.players);
+            var joinRet = await player.JoinChatRoomAsync();
+            JoinChatRoomResponse ret = new() { Success = joinRet};
             return ret;
         }
-        async public override Task<LeaveResponse> Leave(LeaveRequest request, ServerCallContext context)
+        async public override Task<LeaveChatRoomResponse> LeaveChatRoom(Empty request, ServerCallContext context)
         {
             var player = await GetPlayer(context);
             if (player is null)
             {
                 return default;
             }
-            var leaveRet = await player.LeaveAsync(room: request.Room);
-            LeaveResponse ret = new() { Success = leaveRet };
+            var leaveRet = await player.LeaveChatRoomAsync();
+            LeaveChatRoomResponse ret = new() { Success = leaveRet };
             return ret;
         }
-        async public override Task<RoomList> GetAvailableRoomList(Empty request, ServerCallContext context)
+        async public override Task<PlayerDataList> GetRegionPlayerDataList(Empty request, ServerCallContext context)
         {
-            var roomManager = _clusterClient.GetGrain<IRoomManagerGrain>(0);
-            RoomList roomList = new();
-            roomList.Rooms.AddRange(await roomManager.GetListAsync());
-            return roomList;
-        }
-        async public override Task<RoomList> GetJoinedRoomList(Empty request, ServerCallContext context)
-        {
-            var player = await GetPlayer(context);
-            if (player is null)
+            PlayerDataList ret = new PlayerDataList();
+            var (name, _) = await GetContextName(context);
+            foreach (var regionIndex in Program.s_regionList)
             {
-                return s_emptyRoomList;
+                var player = _clusterClient.GetGrain<IPlayerGrain>(regionIndex, name);
+                ret.PlayerDataList_.Add( await player.GetPlayerDataAsync());
             }
-            RoomList roomList = new ();
-            roomList.Rooms.AddRange(await player.GetJoinedRoomListAsync());
-            return roomList; 
+            return ret;
+        }
+
+        async public override Task<RankList> GetTopRankList(Empty request, ServerCallContext context)
+        {
+            var rankingGrain = _clusterClient.GetGrain<IRankingGrain>(0);
+            var topRanks = await rankingGrain.GetTopRanks();
+            var ret = new RankList();
+            ret.Ranks.AddRange(topRanks);
+            return ret;
         }
     }
 }

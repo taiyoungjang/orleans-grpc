@@ -4,11 +4,9 @@ using Orleans.Streams;
 
 public class RoomStreamObserver : IAsyncObserver<game.StreamServerEventsResponse>, IDisposable
 {
-    private readonly string _roomName;
     private readonly Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> _playerStream;
-    public RoomStreamObserver(string roomName, Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> playerStream)
+    public RoomStreamObserver(Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> playerStream)
     {
-        _roomName = roomName;
         _playerStream = playerStream;
     }
     public void Dispose()
