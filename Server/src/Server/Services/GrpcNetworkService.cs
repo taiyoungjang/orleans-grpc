@@ -76,7 +76,7 @@ namespace Server
                 await player.EndOfAsyncStreamAsync();
             }
             var playerStream = _clusterClient
-                .GetStreamProvider(PlayerGrain.s_streamProviderName)
+                .GetStreamProvider(Server.Program.s_streamProviderName)
                 .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.s_streamNamespace);
             var streamObserver = new OrleansStreamObserver(guid, responseStreamWriter, playerStream, EndOfAsyncStream, context.CancellationToken);
             await streamObserver.WaitConsumerTask();

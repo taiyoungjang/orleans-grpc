@@ -105,10 +105,10 @@ namespace Client
 
                 System.Console.WriteLine($"ChatAsync: {roomName}");
                 await _playerNetworkClient.ChatAsync(new() { Room = roomName, Message = message });
+                await Task.Delay(TimeSpan.FromSeconds(1));
 
                 var result = await _playerNetworkClient.GetJoinedRoomListAsync(s_empty);
                 System.Console.WriteLine($"GetJoinedRoomListAsync: {string.Join(',', result.Rooms.Select(t => t.Name))}");
-
                 var leave = await _playerNetworkClient.LeaveAsync(new() { Room = roomName });
                 System.Console.WriteLine($"LeaveAsync: room:{roomName} {leave.Success}");
             } while (true);

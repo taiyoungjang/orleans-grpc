@@ -24,17 +24,19 @@ namespace Server
             _cancellationToken = cancellationToken;
         }
 
-        public Task WaitConsumerTask()
+        async public Task WaitConsumerTask()
         {
-            _pub.SubscribeAsync(this)
-                .ContinueWith( t =>
-                {
-                    if (t.Exception == null)
-                    {
-                        _grpcPub.SetHandle(t.Result);
-                    }
-                });
-            return _grpcPub.ConsumerTask;
+            try
+            {
+                var subscribeHandle = await _pub.SubscribeAsync(this);
+                _grpcPub.SetHandle(subscribeHandle);
+            }
+            catch (Exception exc)
+            {
+
+                throw;
+            }
+            await _grpcPub.ConsumerTask;
         }
 
         public Task OnCompletedAsync() => Task.CompletedTask;

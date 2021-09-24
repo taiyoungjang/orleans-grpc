@@ -25,6 +25,6 @@ public class RoomStreamObserver : IAsyncObserver<game.StreamServerEventsResponse
 
     async public Task OnNextAsync(game.StreamServerEventsResponse item, StreamSequenceToken token = null)
     {
-        await _playerStream.OnNextAsync(item, token);
+        await _playerStream.OnNextAsync(item);
     }
 }

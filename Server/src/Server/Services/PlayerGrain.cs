@@ -13,8 +13,7 @@ using Orleans.Runtime;
 public class PlayerGrain : Orleans.Grain, IPlayerGrain
 {
     private readonly ILogger<PlayerGrain> _logger;
-    public static string s_streamProviderName = "playergrain";
-    public static string s_streamNamespace = "default";
+    public static string s_streamNamespace = $"{nameof(PlayerGrain)}-azurequeueprovider-0".ToLower();
 
     private Orleans.Streams.IAsyncStream<game.StreamServerEventsResponse> _stream;
     private Dictionary<string,StreamSubscriptionHandle<game.StreamServerEventsResponse>> _roomSubscriptions;
@@ -57,7 +56,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
             _state.State.Name = this.GrainReference.GrainIdentity.PrimaryKeyString;
             await _state.WriteStateAsync();
         }
-        var streamProvider = GetStreamProvider(s_streamProviderName);
+        var streamProvider = GetStreamProvider(Server.Program.s_streamProviderName);
         _stream = streamProvider.GetStream<game.StreamServerEventsResponse>(guid, s_streamNamespace);
         return guid;
     }
@@ -96,7 +95,7 @@ public class PlayerGrain : Orleans.Grain, IPlayerGrain
         var joinRet = await roomGrain.JoinAsync(this.GrainReference.GrainIdentity.PrimaryKeyString, _state.State.Name);
         if(joinRet.success)
         {
-            var roomStream = this.GetStreamProvider(RoomGrain.s_streamProviderName)
+            var roomStream = this.GetStreamProvider(Server.Program.s_streamProviderName)
                 .GetStream<StreamServerEventsResponse>(joinRet.streamGuid, RoomGrain.s_streamNamespace);
 
             var handle = await roomStream.SubscribeAsync(new RoomStreamObserver(room, _stream));

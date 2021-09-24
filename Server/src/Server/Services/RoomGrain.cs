@@ -8,8 +8,7 @@ using Orleans.Streams;
 
 public class RoomGrain : Orleans.Grain, IRoomGrain
 {
-    public static string s_streamProviderName = "roomgrain";
-    public static string s_streamNamespace = "default";
+    public static string s_streamNamespace = $"{nameof(RoomGrain)}-azurequeueprovider-0".ToLower();
     private readonly ILogger<RoomGrain> _logger;
     private List<PlayerInfo> _playerInfos;
     private IAsyncStream<game.StreamServerEventsResponse> _stream;
@@ -22,7 +21,7 @@ public class RoomGrain : Orleans.Grain, IRoomGrain
     {
         var roomManager = this.GrainFactory.GetGrain<IRoomManagerGrain>(0);
         await roomManager.CreateAsync(this.GrainReference.GrainIdentity.PrimaryKeyString);
-        var streamProvider = GetStreamProvider(s_streamProviderName);
+        var streamProvider = GetStreamProvider(Server.Program.s_streamProviderName);
         _stream = streamProvider.GetStream<game.StreamServerEventsResponse>(Guid.NewGuid(), s_streamNamespace);
         await base.OnActivateAsync();
     }
