@@ -62,6 +62,12 @@ namespace Client
             var uuid = await _playerNetworkClient.GetAuthAsync(new AuthRequest() { Name = _name });
             var guid = new Guid(uuid.Value.ToByteArray());
             SetBearer(guid);
+            var getPlayerDataList = await _playerNetworkClient.GetRegionPlayerDataListAsync(s_empty);
+            System.Console.WriteLine($"GetRegionPlayerDataListAsync: getPlayerDataList.Count:{getPlayerDataList.PlayerDataList_.Count}");
+
+            var loginPlayerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
+            System.Console.WriteLine($"LoginPlayerData: point:{loginPlayerData.Point}");
+
             System.Console.WriteLine($"player:{_name} guid:{guid}");
             _ = Task.Run(() => CallRpcTask());
             var responseStream = _playerNetworkClient.ServerStreamServerEvents(s_empty).ResponseStream;
@@ -85,11 +91,6 @@ namespace Client
         async private Task CallRpcTask()
         {
             await Task.Delay(TimeSpan.FromSeconds(1));
-            var getPlayerDataList = await _playerNetworkClient.GetRegionPlayerDataListAsync(s_empty);
-            System.Console.WriteLine($"GetRegionPlayerDataListAsync: getPlayerDataList.Count:{getPlayerDataList.PlayerDataList_.Count}");
-
-            var loginPlayerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex});
-            System.Console.WriteLine($"LoginPlayerData: point:{loginPlayerData.Point}");
             do
             {
                 var addPoint = new System.Random().Next(1, 100);
@@ -98,15 +99,9 @@ namespace Client
 
                 string message = $"blah-{Guid.NewGuid()}";
 
-                var joinResult = await _playerNetworkClient.JoinChatRoomAsync(s_empty);
-                System.Console.WriteLine($"JoinChatRoomAsync: RegionIndex:{_regionIndex}");
-
                 System.Console.WriteLine($"ChatAsync: message:{message}");
                 await _playerNetworkClient.ChatAsync(new() { Message = message} );
                 await Task.Delay(TimeSpan.FromSeconds(1));
-
-                var leave = await _playerNetworkClient.LeaveChatRoomAsync(s_empty);
-                System.Console.WriteLine($"LeaveChatRoomAsync: room:{_regionIndex} {leave.Success}");
             } while (true);
         }
     }

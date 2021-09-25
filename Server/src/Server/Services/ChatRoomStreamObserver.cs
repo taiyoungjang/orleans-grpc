@@ -5,21 +5,20 @@ using game;
 
 namespace Server
 {
-    public class OrleansStreamObserver : Orleans.Streams.IAsyncObserver<StreamServerEventsResponse>
+    public class ChatRoomStreamObserver : Orleans.Streams.IAsyncObserver<StreamServerEventsResponse>
     {
         private readonly Guid _key;
         private GrpcStreamResponseQueue _grpcPub;
         private readonly Orleans.Streams.IAsyncStream<StreamServerEventsResponse> _pub;
         private System.Threading.CancellationToken _cancellationToken;
-        public OrleansStreamObserver(
+        public ChatRoomStreamObserver(
             Guid key,
             Grpc.Core.IServerStreamWriter<StreamServerEventsResponse> grpcPub,
-            Orleans.Streams.IAsyncStream<StreamServerEventsResponse> orleansPub, 
-            System.Func<Task> disconnectAction,
+            Orleans.Streams.IAsyncStream<StreamServerEventsResponse> orleansPub,
             System.Threading.CancellationToken cancellationToken)
         {
             _key = key;
-            _grpcPub = new(key, grpcPub, disconnectAction, cancellationToken);
+            _grpcPub = new(key, grpcPub, cancellationToken);
             _pub = orleansPub;
             _cancellationToken = cancellationToken;
         }

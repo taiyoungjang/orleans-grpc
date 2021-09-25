@@ -13,8 +13,6 @@ service PlayerNetwork {
   rpc LoginPlayerData(RegionData) returns (PlayerData);
   rpc AddPoint(AddPointRequest) returns(AddPointResponse);
   rpc ServerStreamServerEvents (google.protobuf.Empty) returns (stream StreamServerEventsResponse);
-  rpc JoinChatRoom(google.protobuf.Empty) returns (JoinChatRoomResponse);
-  rpc LeaveChatRoom(google.protobuf.Empty) returns (LeaveChatRoomResponse);
   rpc Chat(ChatRequest) returns (ChatResponse);
   rpc GetTopRankList(google.protobuf.Empty) returns (RankList);
 }
@@ -72,13 +70,6 @@ message ChatRequest{
 message ChatResponse{
   bool success = 1;
 }
-message JoinChatRoomResponse{
-  bool success = 1;
-}
-message LeaveChatRoomResponse{
-  bool success = 1;
-}
-
 
 message StreamServerEventsResponse {
   message OnChat{

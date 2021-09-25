@@ -16,7 +16,6 @@ public class GrpcStreamResponseQueue
     public Task ConsumerTask => _consumer;
     private readonly Guid _guid;
     private Orleans.Streams.StreamSubscriptionHandle<game.StreamServerEventsResponse> _orleansSubHandle;
-    private System.Func<Task> _disconnectAction;
 
     private readonly Channel<game.StreamServerEventsResponse> _channel = 
         Channel.CreateUnbounded<game.StreamServerEventsResponse>(
@@ -28,13 +27,11 @@ public class GrpcStreamResponseQueue
     public GrpcStreamResponseQueue(
         Guid guid,
         IServerStreamWriter<game.StreamServerEventsResponse> stream,
-        System.Func<Task> disconnectAction,
         CancellationToken cancellationToken = default
     )
     {
         _guid = guid;
         _grpcPub = stream;
-        _disconnectAction = disconnectAction;
         _consumer = ConsumeTask(cancellationToken);
     }
     public void SetHandle(Orleans.Streams.StreamSubscriptionHandle<game.StreamServerEventsResponse> handle)
@@ -77,21 +74,13 @@ public class GrpcStreamResponseQueue
                 if(message.ActionCase == game.StreamServerEventsResponse.ActionOneofCase.OnClosed)
                 {
                     //twice call
-                    _disconnectAction = null;
+                    //_disconnectAction = null;
                     _ =  CompleteAsync();
                 }
             }
         }
         catch(System.Exception)
         {
-        }
-        try
-        {
-            _disconnectAction?.Invoke();
-        }
-        catch (Exception)
-        {
-
         }
         try
         {

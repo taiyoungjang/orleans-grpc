@@ -43,9 +43,6 @@ namespace Server
                           {
                               options.ConnectionString = connectionString;
                               options.QueueNames = new List<string>();
-                              options.QueueNames.Add(PlayerGrain.GetPlayerQueueStreamNamespace(0));
-                              options.QueueNames.Add(PlayerGrain.GetPlayerQueueStreamNamespace(1));
-                              options.QueueNames.Add(PlayerGrain.GetPlayerQueueStreamNamespace(2));
                               options.QueueNames.Add(PlayerGrain.GetChatRoomQueueStreamNamespace(1));
                               options.QueueNames.Add(PlayerGrain.GetChatRoomQueueStreamNamespace(2));
                           }));

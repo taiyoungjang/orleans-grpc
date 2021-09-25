@@ -72,8 +72,9 @@ namespace Server
         {
             string strGuid = context.RequestHeaders.Get(s_authorization).Value;
             long regionIndex = 0;
-            if (long.TryParse(context.RequestHeaders.Get(s_region).Value, out regionIndex))
+            if (!long.TryParse(context.RequestHeaders.Get(s_region).Value, out regionIndex))
             {
+                _logger.LogError("");
 
             }
             var player = await GetPlayer(context);
@@ -81,16 +82,21 @@ namespace Server
             {
                 return;
             }
-            Guid guid = Guid.Parse(strGuid);
-            async Task EndOfAsyncStream()
-            {
-                await player.EndOfAsyncStreamAsync();
-            }
-            var playerStream = _clusterClient
+            Guid guid = Guid.Empty;
+            var roomStream = _clusterClient
                 .GetStreamProvider(Server.Program.s_streamProviderName)
-                .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.GetPlayerQueueStreamNamespace(regionIndex));
-            var streamObserver = new OrleansStreamObserver(guid, responseStreamWriter, playerStream, EndOfAsyncStream, context.CancellationToken);
-            await streamObserver.WaitConsumerTask();
+                .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.GetChatRoomQueueStreamNamespace(regionIndex));
+            var streamObserver = new ChatRoomStreamObserver(guid, responseStreamWriter, roomStream, context.CancellationToken);
+
+            try
+            {
+                await streamObserver.WaitConsumerTask();
+            }
+            catch (Exception)
+            {
+
+            }
+
         }
 
         async public override Task<PlayerData> LoginPlayerData(RegionData request, ServerCallContext context)
@@ -103,7 +109,6 @@ namespace Server
                 return default;
             }
             Guid guid = Guid.Parse(strGuid);
-            guid = await player.SetStreamAsync(guid);
             return await player.GetPlayerDataAsync();
         }
         async public override Task<AddPointResponse> AddPoint(AddPointRequest request, ServerCallContext context)
@@ -118,36 +123,22 @@ namespace Server
 
         async public override Task<ChatResponse> Chat(ChatRequest request, ServerCallContext context)
         {
-            var player = await GetPlayer(context);
-            if (player is null)
+            var (name, regionIndex) = await GetContextName(context);
+            var roomStream = _clusterClient.GetStreamProvider(Server.Program.s_streamProviderName)
+   .GetStream<StreamServerEventsResponse>(Guid.Empty, PlayerGrain.GetChatRoomQueueStreamNamespace(regionIndex));
+            StreamServerEventsResponse grpcStreamResponse = new()
             {
-                return default;
-            }
-            var ret = await player.ChatAsync(message: request.Message);
-            return new() { Success = ret };
+                OnChat = new()
+                {
+                    RoomInfo = $"chatroom{regionIndex}",
+                    OtherPlayer = name,
+                    Message = request.Message
+                }
+            };
+            await roomStream.OnNextAsync(grpcStreamResponse);
+            return new() { Success = true };
         }
-        async public override Task<JoinChatRoomResponse> JoinChatRoom(Empty request, ServerCallContext context)
-        {
-            var player = await GetPlayer(context);
-            if (player is null)
-            {
-                return default;
-            }
-            var joinRet = await player.JoinChatRoomAsync();
-            JoinChatRoomResponse ret = new() { Success = joinRet};
-            return ret;
-        }
-        async public override Task<LeaveChatRoomResponse> LeaveChatRoom(Empty request, ServerCallContext context)
-        {
-            var player = await GetPlayer(context);
-            if (player is null)
-            {
-                return default;
-            }
-            var leaveRet = await player.LeaveChatRoomAsync();
-            LeaveChatRoomResponse ret = new() { Success = leaveRet };
-            return ret;
-        }
+
         async public override Task<PlayerDataList> GetRegionPlayerDataList(Empty request, ServerCallContext context)
         {
             PlayerDataList ret = new PlayerDataList();
@@ -162,7 +153,8 @@ namespace Server
 
         async public override Task<RankList> GetTopRankList(Empty request, ServerCallContext context)
         {
-            var rankingGrain = _clusterClient.GetGrain<IRankingGrain>(0);
+            var (name, regionIndex) = await GetContextName(context);
+            var rankingGrain = _clusterClient.GetGrain<IRankingGrain>(regionIndex);
             var topRanks = await rankingGrain.GetTopRanks();
             var ret = new RankList();
             ret.Ranks.AddRange(topRanks);
