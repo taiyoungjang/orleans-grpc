@@ -2,6 +2,8 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";  
+import "google/protobuf/timestamp.proto";
 
 option csharp_namespace = "game";
 
@@ -11,7 +13,7 @@ service PlayerNetwork {
   rpc GetAuth(AuthRequest) returns (UUID);
   rpc GetRegionPlayerDataList(google.protobuf.Empty) returns (PlayerDataList);
   rpc LoginPlayerData(RegionData) returns (PlayerData);
-  rpc AddPoint(AddPointRequest) returns(AddPointResponse);
+  rpc UpdateStage(UpdateStageRequest) returns(UpdateStageResponse);
   rpc ServerStreamServerEvents (google.protobuf.Empty) returns (stream StreamServerEventsResponse);
   rpc Chat(ChatRequest) returns (ChatResponse);
   rpc GetTopRankList(google.protobuf.Empty) returns (RankList);
@@ -28,16 +30,20 @@ message RegionData{
 message PlayerData{
     int64 regionIndex = 1;
     string name = 2;
-    int32 point = 3;
+    int32 stage = 3;
 }
 
 message RankData{
-    string name = 1;
-    int32 point = 2;
+    int64 regionIndex = 1;
+    int64 rank = 2;
+    string name = 3;
+    int32 stage = 4;
+    google.protobuf.Timestamp updateDate = 5;
 }
 
 message RankList{
-    repeated RankData ranks = 1;
+    google.protobuf.Timestamp updateDate = 1;
+    repeated RankData ranks = 2;
 }
 
 message ChatRoom{
@@ -56,12 +62,12 @@ message AuthRequest{
   string name = 1;
 }
 
-message AddPointRequest{
-  int32 addPoint = 1;
+message UpdateStageRequest{
+  int32 stage = 1;
 }
 
-message AddPointResponse{
-  int32 addedPoint = 1;
+message UpdateStageResponse{
+  int32 stage = 1;
 }
 
 message ChatRequest{

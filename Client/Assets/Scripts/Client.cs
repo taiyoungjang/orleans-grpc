@@ -15,6 +15,8 @@ public class NetworkClient
     private Metadata.Entry _bearer;
     private Metadata.Entry _regionMeta;
     private Grpc.Core.Channel _channel;
+    private game.PlayerData _playerData;
+
     public NetworkClient(string host, int port, string name, long regionIndex, System.Threading.CancellationToken token)
     {
         _regionIndex = regionIndex;
@@ -55,6 +57,12 @@ public class NetworkClient
         var uuid = await _playerNetworkClient.GetAuthAsync(new AuthRequest() { Name = _name });
         var guid = new Guid(uuid.Value.ToByteArray());
         SetBearer(guid);
+        var getPlayerDataList = await _playerNetworkClient.GetRegionPlayerDataListAsync(s_empty);
+        System.Console.WriteLine($"GetRegionPlayerDataListAsync: getPlayerDataList.Count:{getPlayerDataList.PlayerDataList_.Count}");
+
+        _playerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
+        System.Console.WriteLine($"LoginPlayerData: Stage:{_playerData.Stage}");
+
         _ = Task.Run(() => CallRpcTask());
         var responseStream = _playerNetworkClient.ServerStreamServerEvents(s_empty).ResponseStream;
         while (await responseStream.MoveNext(_token))
@@ -75,21 +83,26 @@ public class NetworkClient
     async private Task CallRpcTask()
     {
         await Task.Delay(TimeSpan.FromSeconds(1));
-        var getPlayerDataList = await _playerNetworkClient.GetRegionPlayerDataListAsync(s_empty);
-        UnityEngine.Debug.Log($"GetRegionPlayerDataListAsync: getPlayerDataList.Count:{getPlayerDataList.PlayerDataList_.Count}");
-        var loginPlayerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
-        UnityEngine.Debug.Log($"GetPlayerDataAsync: point:{loginPlayerData.Point}");
-        var addPoint = new System.Random().Next(1, 100);
-        var addPointAsync = await _playerNetworkClient.AddPointAsync(new AddPointRequest() { AddPoint = addPoint });
-        UnityEngine.Debug.Log($"AddPointAsync: addPoint:{addPoint} AddedPoint:{addPointAsync.AddedPoint}");
+        var random = new System.Random();
+        do
+        {
+            int addStage = random.Next(1, 4);
+            _playerData.Stage += addStage;
+            var updateStageAsync = await _playerNetworkClient.UpdateStageAsync(new UpdateStageRequest() { Stage = _playerData.Stage });
+            System.Console.WriteLine($"UpdateStageAsync: addStage:{addStage} Stage:{updateStageAsync.Stage}");
 
-        string message = $"blah-{Guid.NewGuid()}";
-
-        var joinResult = await _playerNetworkClient.JoinChatRoomAsync(s_empty);
-        UnityEngine.Debug.Log($"JoinChatRoomAsync: RegionIndex:{_regionIndex}");
-
-        UnityEngine.Debug.Log($"ChatAsync: {message}");
-        await _playerNetworkClient.ChatAsync(new ChatRequest() {  Message = message });
-
+            if (random.Next(0, 1) == 0)
+            {
+                string message = $"blah-{Guid.NewGuid()}";
+                UnityEngine.Debug.Log($"ChatAsync: message:{message}");
+                await _playerNetworkClient.ChatAsync(new ChatRequest() { Message = message });
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+            var rankings = await _playerNetworkClient.GetTopRankListAsync(s_empty);
+            foreach (var rank in rankings.Ranks)
+            {
+                UnityEngine.Debug.Log($"rank:{rank.Rank} name:{rank.Name} Stage:{rank.Stage}");
+            }
+        } while (true);
     }
 }

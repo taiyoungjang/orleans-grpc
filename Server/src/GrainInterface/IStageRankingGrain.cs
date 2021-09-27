@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
 using Orleans;
-public interface IRankingGrain : IGrainWithIntegerKey
+public interface IStageRankingGrain : IGrainWithIntegerKey
 {
-    ValueTask<List<game.RankData>> GetTopRanks();
-
+    ValueTask CheckAsync();
+    ValueTask<ImmutableList<game.RankData>> GetTopRanks();
 }

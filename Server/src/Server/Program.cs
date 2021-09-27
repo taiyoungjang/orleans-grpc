@@ -43,8 +43,8 @@ namespace Server
                           {
                               options.ConnectionString = connectionString;
                               options.QueueNames = new List<string>();
-                              options.QueueNames.Add(PlayerGrain.GetChatRoomQueueStreamNamespace(1));
-                              options.QueueNames.Add(PlayerGrain.GetChatRoomQueueStreamNamespace(2));
+                              options.QueueNames.Add(PlayerGrain.GetRegionQueueStreamNamespace(1));
+                              options.QueueNames.Add(PlayerGrain.GetRegionQueueStreamNamespace(2));
                           }));
                         configurator.ConfigureCacheSize(1024);
                         configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
@@ -72,6 +72,20 @@ namespace Server
                     siloBuilder.AddAzureBlobGrainStorage("player", options =>
                     {
                         options.UseJson = true;
+                        options.ConnectionString = connectionString;
+                    });
+                    siloBuilder.AddAzureBlobGrainStorage("stagerank", options =>
+                    {
+                        options.UseJson = true;
+                        options.ConnectionString = connectionString;
+                    });
+                    siloBuilder.AddAzureBlobGrainStorage("stageupdaterank", options =>
+                    {
+                        options.UseJson = true;
+                        options.ConnectionString = connectionString;
+                    });
+                    siloBuilder.UseAzureTableReminderService(options =>
+                    {
                         options.ConnectionString = connectionString;
                     });
                     //siloBuilder.AddAzureTableGrainStorage("PubSubStore", options =>

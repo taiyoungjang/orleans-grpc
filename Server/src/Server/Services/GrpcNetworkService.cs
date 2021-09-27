@@ -83,10 +83,10 @@ namespace Server
                 return;
             }
             Guid guid = Guid.Empty;
-            var roomStream = _clusterClient
+            var regionStream = _clusterClient
                 .GetStreamProvider(Server.Program.s_streamProviderName)
-                .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.GetChatRoomQueueStreamNamespace(regionIndex));
-            var streamObserver = new ChatRoomStreamObserver(guid, responseStreamWriter, roomStream, context.CancellationToken);
+                .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.GetRegionQueueStreamNamespace(regionIndex));
+            var streamObserver = new RegionStreamObserver(guid, responseStreamWriter, regionStream, context.CancellationToken);
 
             try
             {
@@ -111,21 +111,22 @@ namespace Server
             Guid guid = Guid.Parse(strGuid);
             return await player.GetPlayerDataAsync();
         }
-        async public override Task<AddPointResponse> AddPoint(AddPointRequest request, ServerCallContext context)
+        async public override Task<UpdateStageResponse> UpdateStage(UpdateStageRequest request, ServerCallContext context)
         {
             var player = await GetPlayer(context);
             if (player is null)
             {
                 return default;
             }
-            return new() { AddedPoint = await player.AddPointAsync(request.AddPoint) };
+            return new() { Stage = await player.UpdateStageAsync(request.Stage) };
         }
 
         async public override Task<ChatResponse> Chat(ChatRequest request, ServerCallContext context)
         {
             var (name, regionIndex) = await GetContextName(context);
-            var roomStream = _clusterClient.GetStreamProvider(Server.Program.s_streamProviderName)
-   .GetStream<StreamServerEventsResponse>(Guid.Empty, PlayerGrain.GetChatRoomQueueStreamNamespace(regionIndex));
+            var roomStream = _clusterClient
+                .GetStreamProvider(Server.Program.s_streamProviderName)
+                .GetStream<StreamServerEventsResponse>(Guid.Empty, PlayerGrain.GetRegionQueueStreamNamespace(regionIndex));
             StreamServerEventsResponse grpcStreamResponse = new()
             {
                 OnChat = new()
@@ -154,7 +155,7 @@ namespace Server
         async public override Task<RankList> GetTopRankList(Empty request, ServerCallContext context)
         {
             var (name, regionIndex) = await GetContextName(context);
-            var rankingGrain = _clusterClient.GetGrain<IRankingGrain>(regionIndex);
+            var rankingGrain = _clusterClient.GetGrain<IStageRankingGrain>(regionIndex);
             var topRanks = await rankingGrain.GetTopRanks();
             var ret = new RankList();
             ret.Ranks.AddRange(topRanks);

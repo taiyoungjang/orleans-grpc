@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using Orleans;
 public interface IPlayerGrain : IGrainWithIntegerCompoundKey
 {
-    ValueTask<int> AddPointAsync(int point);
+    ValueTask<int> UpdateStageAsync(int stage);
 
     ValueTask<game.PlayerData> GetPlayerDataAsync();
 }

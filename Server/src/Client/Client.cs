@@ -18,6 +18,7 @@ namespace Client
         private GrpcChannel _channel;
         private Metadata.Entry _bearer;
         private Metadata.Entry _regionMeta;
+        private game.PlayerData _playerData;
         public Client(string name, long regionIndex)
         {
             _regionIndex = regionIndex;
@@ -65,8 +66,8 @@ namespace Client
             var getPlayerDataList = await _playerNetworkClient.GetRegionPlayerDataListAsync(s_empty);
             System.Console.WriteLine($"GetRegionPlayerDataListAsync: getPlayerDataList.Count:{getPlayerDataList.PlayerDataList_.Count}");
 
-            var loginPlayerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
-            System.Console.WriteLine($"LoginPlayerData: point:{loginPlayerData.Point}");
+            _playerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
+            System.Console.WriteLine($"LoginPlayerData: Stage:{_playerData.Stage}");
 
             System.Console.WriteLine($"player:{_name} guid:{guid}");
             _ = Task.Run(() => CallRpcTask());
@@ -91,17 +92,26 @@ namespace Client
         async private Task CallRpcTask()
         {
             await Task.Delay(TimeSpan.FromSeconds(1));
+            var random = new System.Random();
             do
             {
-                var addPoint = new System.Random().Next(1, 100);
-                var addPointAsync = await _playerNetworkClient.AddPointAsync(new() { AddPoint = addPoint });
-                System.Console.WriteLine($"AddPointAsync: addPoint:{addPoint} AddedPoint:{addPointAsync.AddedPoint}");
+                int addStage = random.Next(1, 4);
+                _playerData.Stage += addStage;
+                var updateStageAsync = await _playerNetworkClient.UpdateStageAsync(new() { Stage = _playerData.Stage });
+                System.Console.WriteLine($"UpdateStageAsync: addStage:{addStage} Stage:{updateStageAsync.Stage}");
 
-                string message = $"blah-{Guid.NewGuid()}";
-
-                System.Console.WriteLine($"ChatAsync: message:{message}");
-                await _playerNetworkClient.ChatAsync(new() { Message = message} );
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                if(random.Next(0,1) == 0)
+                {
+                    string message = $"blah-{Guid.NewGuid()}";
+                    System.Console.WriteLine($"ChatAsync: message:{message}");
+                    await _playerNetworkClient.ChatAsync(new() { Message = message });
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+                var rankings = await _playerNetworkClient.GetTopRankListAsync(s_empty);
+                foreach(var rank in rankings.Ranks)
+                {
+                    System.Console.WriteLine($"rank:{rank.Rank} name:{rank.Name} Stage:{rank.Stage}");
+                }
             } while (true);
         }
     }

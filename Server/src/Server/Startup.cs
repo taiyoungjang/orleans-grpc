@@ -42,6 +42,7 @@ namespace Server
             });
             services.AddAuthorization();
             services.AddGrpc();
+            services.AddSingleton<IHostedService, CheckRankHostedService>();
             //services.AddAuthentication("Bearer");
             //services.AddSingleton(new PlayerNetworkService());
         }

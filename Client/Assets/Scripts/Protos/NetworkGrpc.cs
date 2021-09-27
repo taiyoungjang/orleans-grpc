@@ -18,11 +18,9 @@ namespace game {
     static readonly grpc::Marshaller<global::game.PlayerDataList> __Marshaller_playerNetwork_PlayerDataList = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.PlayerDataList.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.RegionData> __Marshaller_playerNetwork_RegionData = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.RegionData.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.PlayerData> __Marshaller_playerNetwork_PlayerData = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.PlayerData.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::game.AddPointRequest> __Marshaller_playerNetwork_AddPointRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.AddPointRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::game.AddPointResponse> __Marshaller_playerNetwork_AddPointResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.AddPointResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::game.UpdateStageRequest> __Marshaller_playerNetwork_UpdateStageRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.UpdateStageRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::game.UpdateStageResponse> __Marshaller_playerNetwork_UpdateStageResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.UpdateStageResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.StreamServerEventsResponse> __Marshaller_playerNetwork_StreamServerEventsResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.StreamServerEventsResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::game.JoinChatRoomResponse> __Marshaller_playerNetwork_JoinChatRoomResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.JoinChatRoomResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::game.LeaveChatRoomResponse> __Marshaller_playerNetwork_LeaveChatRoomResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.LeaveChatRoomResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.ChatRequest> __Marshaller_playerNetwork_ChatRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.ChatRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.ChatResponse> __Marshaller_playerNetwork_ChatResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.ChatResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.RankList> __Marshaller_playerNetwork_RankList = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.RankList.Parser.ParseFrom);
@@ -48,12 +46,12 @@ namespace game {
         __Marshaller_playerNetwork_RegionData,
         __Marshaller_playerNetwork_PlayerData);
 
-    static readonly grpc::Method<global::game.AddPointRequest, global::game.AddPointResponse> __Method_AddPoint = new grpc::Method<global::game.AddPointRequest, global::game.AddPointResponse>(
+    static readonly grpc::Method<global::game.UpdateStageRequest, global::game.UpdateStageResponse> __Method_UpdateStage = new grpc::Method<global::game.UpdateStageRequest, global::game.UpdateStageResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
-        "AddPoint",
-        __Marshaller_playerNetwork_AddPointRequest,
-        __Marshaller_playerNetwork_AddPointResponse);
+        "UpdateStage",
+        __Marshaller_playerNetwork_UpdateStageRequest,
+        __Marshaller_playerNetwork_UpdateStageResponse);
 
     static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.StreamServerEventsResponse> __Method_ServerStreamServerEvents = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.StreamServerEventsResponse>(
         grpc::MethodType.ServerStreaming,
@@ -61,20 +59,6 @@ namespace game {
         "ServerStreamServerEvents",
         __Marshaller_google_protobuf_Empty,
         __Marshaller_playerNetwork_StreamServerEventsResponse);
-
-    static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.JoinChatRoomResponse> __Method_JoinChatRoom = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.JoinChatRoomResponse>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "JoinChatRoom",
-        __Marshaller_google_protobuf_Empty,
-        __Marshaller_playerNetwork_JoinChatRoomResponse);
-
-    static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.LeaveChatRoomResponse> __Method_LeaveChatRoom = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.LeaveChatRoomResponse>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "LeaveChatRoom",
-        __Marshaller_google_protobuf_Empty,
-        __Marshaller_playerNetwork_LeaveChatRoomResponse);
 
     static readonly grpc::Method<global::game.ChatRequest, global::game.ChatResponse> __Method_Chat = new grpc::Method<global::game.ChatRequest, global::game.ChatResponse>(
         grpc::MethodType.Unary,
@@ -167,21 +151,21 @@ namespace game {
       {
         return CallInvoker.AsyncUnaryCall(__Method_LoginPlayerData, null, options, request);
       }
-      public virtual global::game.AddPointResponse AddPoint(global::game.AddPointRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual global::game.UpdateStageResponse UpdateStage(global::game.UpdateStageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return AddPoint(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return UpdateStage(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::game.AddPointResponse AddPoint(global::game.AddPointRequest request, grpc::CallOptions options)
+      public virtual global::game.UpdateStageResponse UpdateStage(global::game.UpdateStageRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.BlockingUnaryCall(__Method_AddPoint, null, options, request);
+        return CallInvoker.BlockingUnaryCall(__Method_UpdateStage, null, options, request);
       }
-      public virtual grpc::AsyncUnaryCall<global::game.AddPointResponse> AddPointAsync(global::game.AddPointRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncUnaryCall<global::game.UpdateStageResponse> UpdateStageAsync(global::game.UpdateStageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return AddPointAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return UpdateStageAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncUnaryCall<global::game.AddPointResponse> AddPointAsync(global::game.AddPointRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncUnaryCall<global::game.UpdateStageResponse> UpdateStageAsync(global::game.UpdateStageRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.AsyncUnaryCall(__Method_AddPoint, null, options, request);
+        return CallInvoker.AsyncUnaryCall(__Method_UpdateStage, null, options, request);
       }
       public virtual grpc::AsyncServerStreamingCall<global::game.StreamServerEventsResponse> ServerStreamServerEvents(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -190,38 +174,6 @@ namespace game {
       public virtual grpc::AsyncServerStreamingCall<global::game.StreamServerEventsResponse> ServerStreamServerEvents(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncServerStreamingCall(__Method_ServerStreamServerEvents, null, options, request);
-      }
-      public virtual global::game.JoinChatRoomResponse JoinChatRoom(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return JoinChatRoom(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::game.JoinChatRoomResponse JoinChatRoom(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_JoinChatRoom, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::game.JoinChatRoomResponse> JoinChatRoomAsync(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return JoinChatRoomAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::game.JoinChatRoomResponse> JoinChatRoomAsync(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_JoinChatRoom, null, options, request);
-      }
-      public virtual global::game.LeaveChatRoomResponse LeaveChatRoom(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return LeaveChatRoom(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::game.LeaveChatRoomResponse LeaveChatRoom(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_LeaveChatRoom, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::game.LeaveChatRoomResponse> LeaveChatRoomAsync(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return LeaveChatRoomAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::game.LeaveChatRoomResponse> LeaveChatRoomAsync(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_LeaveChatRoom, null, options, request);
       }
       public virtual global::game.ChatResponse Chat(global::game.ChatRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {

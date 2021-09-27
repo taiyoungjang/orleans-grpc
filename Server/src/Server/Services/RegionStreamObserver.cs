@@ -5,13 +5,13 @@ using game;
 
 namespace Server
 {
-    public class ChatRoomStreamObserver : Orleans.Streams.IAsyncObserver<StreamServerEventsResponse>
+    public class RegionStreamObserver : Orleans.Streams.IAsyncObserver<StreamServerEventsResponse>
     {
         private readonly Guid _key;
         private GrpcStreamResponseQueue _grpcPub;
         private readonly Orleans.Streams.IAsyncStream<StreamServerEventsResponse> _pub;
         private System.Threading.CancellationToken _cancellationToken;
-        public ChatRoomStreamObserver(
+        public RegionStreamObserver(
             Guid key,
             Grpc.Core.IServerStreamWriter<StreamServerEventsResponse> grpcPub,
             Orleans.Streams.IAsyncStream<StreamServerEventsResponse> orleansPub,
@@ -30,7 +30,7 @@ namespace Server
                 var subscribeHandle = await _pub.SubscribeAsync(this);
                 _grpcPub.SetHandle(subscribeHandle);
             }
-            catch (Exception exc)
+            catch (Exception)
             {
 
                 throw;
