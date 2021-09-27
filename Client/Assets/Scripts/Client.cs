@@ -63,7 +63,7 @@ public class NetworkClient
         _playerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
         System.Console.WriteLine($"LoginPlayerData: Stage:{_playerData.Stage}");
 
-        _ = Task.Run(() => CallRpcTask());
+        System.Threading.SynchronizationContext.Current.Post( async _ => await CallRpcTask(),null);
         var responseStream = _playerNetworkClient.ServerStreamServerEvents(s_empty).ResponseStream;
         while (await responseStream.MoveNext(_token))
         {
@@ -96,13 +96,13 @@ public class NetworkClient
                 string message = $"blah-{Guid.NewGuid()}";
                 UnityEngine.Debug.Log($"ChatAsync: message:{message}");
                 await _playerNetworkClient.ChatAsync(new ChatRequest() { Message = message });
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromSeconds(1),_token);
             }
             var rankings = await _playerNetworkClient.GetTopRankListAsync(s_empty);
             foreach (var rank in rankings.Ranks)
             {
                 UnityEngine.Debug.Log($"rank:{rank.Rank} name:{rank.Name} Stage:{rank.Stage}");
             }
-        } while (true);
+        } while (!_token.IsCancellationRequested);
     }
 }
