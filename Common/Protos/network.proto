@@ -10,13 +10,21 @@ option csharp_namespace = "game";
 package playerNetwork;
 
 service PlayerNetwork {
-  rpc GetAuth(AuthRequest) returns (UUID);
+  rpc GetAuth(AuthRequest) returns (AuthResponse);
   rpc GetRegionPlayerDataList(google.protobuf.Empty) returns (PlayerDataList);
   rpc LoginPlayerData(RegionData) returns (PlayerData);
+  rpc CreatePlayer(CreatePlayerRequest) returns (CreatePlayerResponse);
   rpc UpdateStage(UpdateStageRequest) returns(UpdateStageResponse);
   rpc ServerStreamServerEvents (google.protobuf.Empty) returns (stream StreamServerEventsResponse);
   rpc Chat(ChatRequest) returns (ChatResponse);
   rpc GetTopRankList(google.protobuf.Empty) returns (RankList);
+}
+
+enum ErrorCode {
+    Success = 0;
+    Failure = 1;
+    AlreadyCreatedCharacter = 2;
+    AlreadyDefinedName = 3;
 }
 
 message UUID{
@@ -59,7 +67,12 @@ message RoomList{
 }
 
 message AuthRequest{
-  string name = 1;
+  string firebaseId = 1;
+  UUID otp = 2;
+}
+message AuthResponse{
+  UUID otp = 1;
+  ErrorCode errorCode = 2;
 }
 
 message UpdateStageRequest{
@@ -67,19 +80,28 @@ message UpdateStageRequest{
 }
 
 message UpdateStageResponse{
-  int32 stage = 1;
+  ErrorCode errorCode = 1;
 }
 
+message CreatePlayerRequest{
+  int64 regionIndex= 1;
+  string name = 2;
+}
+message CreatePlayerResponse{
+  ErrorCode errorCode = 1;
+}
+
+
 message ChatRequest{
-  string message = 2;
+  string message = 1;
 }
 message ChatResponse{
-  bool success = 1;
+  ErrorCode errorCode = 1;
 }
 
 message StreamServerEventsResponse {
   message OnChat{
-    string roomInfo = 1;
+    int64 regionIndex = 1;
     string otherPlayer = 2;
     string message = 3;
   }

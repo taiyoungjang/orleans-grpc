@@ -18,59 +18,88 @@ namespace Server
         private readonly ILogger<GrpcNetworkService> _logger;
         private readonly Orleans.IClusterClient _clusterClient;
         private static game.RoomList s_emptyRoomList = new();
-        private readonly IDistributedCache _cache;
         private readonly static string s_region = "region";
-        private readonly static string s_authorization = "authorization";
-        public GrpcNetworkService(Orleans.IClusterClient clusterClient, ILogger<GrpcNetworkService> logger, IDistributedCache cache)
+        private readonly static string s_otp = "otp";
+        public GrpcNetworkService(Orleans.IClusterClient clusterClient, ILogger<GrpcNetworkService> logger)
         {
             _clusterClient = clusterClient;
             _logger = logger;
-            _cache = cache;
         }
-        async public override Task<UUID> GetAuth(AuthRequest request, ServerCallContext context)
+        async public override Task<AuthResponse> GetAuth(AuthRequest request, ServerCallContext context)
         {
-            Guid guid;
+            AuthResponse ret = new AuthResponse();
+            AuthData authData;
+            OtpData otpData;
             try
             {
-                if(!Guid.TryParse( await _cache.GetStringAsync($"player-{request.Name}"), out guid))
                 {
-                    guid = System.Guid.NewGuid();
-                    await _cache.SetStringAsync($"player-{request.Name}", guid.ToString());
+                    var authGrain = _clusterClient.GetGrain<IAuthGrain>(request.FirebaseId);
+                    authData = await authGrain.GetAuthDataAsync();
+                    if (authData.AccountGuid.Equals(System.Guid.Empty))
+                    {
+                        authData = await authGrain.SetNewAccountGuid();
+                    }
+                    if (authData.AccountGuid.Equals(System.Guid.Empty))
+                    {
+                        throw new System.Exception($"FirebaseId:{request.FirebaseId} accountUid:empty");
+                    }
                 }
-                await _cache.SetStringAsync(guid.ToString(), request.Name);
+
+                IOtpGrain otpGrain;
+                Guid otpGuid = System.Guid.Empty;
+                if (request.Otp != null)
+                {
+                    otpGuid = new System.Guid(request.Otp.Value.Span);
+                }
+                if(otpGuid.Equals(System.Guid.Empty))
+                {
+                    otpGrain = _clusterClient.GetGrain<IOtpGrain>(System.Guid.NewGuid());
+                    otpData = await otpGrain.SetAccountGuidAsync(authData.AccountGuid);
+                }
+                else
+                {
+                    otpGrain = _clusterClient.GetGrain<IOtpGrain>(otpGuid);
+                    otpData = await otpGrain.GetOtpAsync();
+                }
+                if (otpData.AccountGuid.Equals(System.Guid.Empty))
+                {
+                    throw new System.Exception($"FirebaseId:{request.FirebaseId} accountUid:empty");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 throw;
             }
-            UUID ret = new() { Value = Google.Protobuf.ByteString.CopyFrom(guid.ToByteArray()) };
+            ret.Otp = new() { Value = Google.Protobuf.ByteString.CopyFrom(otpData.Otp.ToByteArray()) };
             return ret;
         }
 
-        async private Task<(string name,int regionIndex)> GetContextName(ServerCallContext context)
+        async private Task<(Guid accountGuid, Guid playerGuid, string playerName, long regionIndex)> GetContextName(ServerCallContext context)
         {
-            string name = await _cache.GetStringAsync(context.RequestHeaders.Get(s_authorization).Value);
-            int regionIndex = 0;
-            if( int.TryParse(context.RequestHeaders.Get(s_region).Value, out regionIndex))
+            var otpGrain = _clusterClient.GetGrain<IOtpGrain>(System.Guid.Parse(context.RequestHeaders.Get(s_otp).Value));
+            OtpData otpData = await otpGrain.GetOtpAsync();
+            long regionIndex = 0;
+            if( !long.TryParse(context.RequestHeaders.Get(s_region).Value, out regionIndex))
             {
 
             }
-            return (name, regionIndex);
+            otpData = await otpGrain.GetOtpAsync();
+            return (otpData.AccountGuid, otpData.PlayerGuid, otpData.PlayerName, regionIndex);
         }
         async private Task<IPlayerGrain> GetPlayer(ServerCallContext context)
         {
-            var (name,regionIndex) = await GetContextName(context);
-            if (string.IsNullOrEmpty(name))
+            var (accountGuid, playerGuid, _, _) = await GetContextName(context);
+            if (accountGuid.Equals(System.Guid.Empty))
             {
                 return null;
             }
-            return _clusterClient.GetGrain<IPlayerGrain>(regionIndex,name);
+            return _clusterClient.GetGrain<IPlayerGrain>(playerGuid);
         }
 
         async public override Task ServerStreamServerEvents(global::Google.Protobuf.WellKnownTypes.Empty empty, IServerStreamWriter<StreamServerEventsResponse> responseStreamWriter, ServerCallContext context)
         {
-            string strGuid = context.RequestHeaders.Get(s_authorization).Value;
+            string strGuid = context.RequestHeaders.Get(s_otp).Value;
             long regionIndex = 0;
             if (!long.TryParse(context.RequestHeaders.Get(s_region).Value, out regionIndex))
             {
@@ -101,15 +130,60 @@ namespace Server
 
         async public override Task<PlayerData> LoginPlayerData(RegionData request, ServerCallContext context)
         {
-            string strGuid = context.RequestHeaders.Get(s_authorization).Value;
-            var (name, regionIndex) = await GetContextName(context);
-            var player = _clusterClient.GetGrain<IPlayerGrain>(request.RegionIndex, name);
+            var (accountGuid, playerGuid, _, regionIndex) = await GetContextName(context);
+            var playerDataListGrain = _clusterClient.GetGrain<IPlayerDataListGrain>(accountGuid);
+            var playerListData = await playerDataListGrain.GetPlayerGuidListDataAsync();
+            var playerGuidWithRegionIndex = playerListData.FirstOrDefault(t => t.RegionIndex == t.RegionIndex);
+            if(playerGuidWithRegionIndex.Equals(default(PlayerGuid)))
+            {
+                return default;
+            }
+            regionIndex = playerGuidWithRegionIndex.RegionIndex;
+            playerGuid = playerGuidWithRegionIndex.Player;
+            var player = _clusterClient.GetGrain<IPlayerGrain>(playerGuid);
             if (player is null)
             {
                 return default;
             }
-            Guid guid = Guid.Parse(strGuid);
+            var otpGrain = _clusterClient.GetGrain<IOtpGrain>(System.Guid.Parse(context.RequestHeaders.Get(s_otp).Value));
+            await otpGrain.SetPlayerGuidAsync(regionIndex, playerGuid, playerGuidWithRegionIndex.PlayerName);
             return await player.GetPlayerDataAsync();
+        }
+        async public override Task<CreatePlayerResponse> CreatePlayer(CreatePlayerRequest request, ServerCallContext context)
+        {
+            var (accountGuid, playerGuid,_, regionIndex) = await GetContextName(context);
+            var playerDataListGrain = _clusterClient.GetGrain<IPlayerDataListGrain>(accountGuid);
+            var playerListData = await playerDataListGrain.GetPlayerGuidListDataAsync();
+            if (playerListData.Any(t=> t.RegionIndex == request.RegionIndex))
+            {
+                return new CreatePlayerResponse() { ErrorCode = ErrorCode.AlreadyCreatedCharacter };
+            }
+            playerGuid = System.Guid.NewGuid();
+            regionIndex = request.RegionIndex;
+            var uniqueNameGrain = _clusterClient.GetGrain<IUniqueNameGrain>(regionIndex);
+            {
+                var result = await uniqueNameGrain.SetPlayerName(request.Name, playerGuid);
+                if (result != ErrorCode.Success)
+                {
+                    return new() { ErrorCode = result };
+                }
+            }
+            var player = _clusterClient.GetGrain<IPlayerGrain>(playerGuid);
+            if (player is null)
+            {
+                return new CreatePlayerResponse();
+            }
+            var playerData = await player.GetPlayerDataAsync();
+            if( !string.IsNullOrEmpty(playerData.Name))
+            {
+                return new CreatePlayerResponse();
+            }
+            if(await player.CreatePlayerAsync(regionIndex, request.Name) != ErrorCode.Success)
+            {
+                return new CreatePlayerResponse();
+            }
+            await playerDataListGrain.SetPlayerListData(request.RegionIndex, playerGuid, playerName: request.Name);
+            return new CreatePlayerResponse() { ErrorCode =  ErrorCode.Success };
         }
         async public override Task<UpdateStageResponse> UpdateStage(UpdateStageRequest request, ServerCallContext context)
         {
@@ -118,12 +192,12 @@ namespace Server
             {
                 return default;
             }
-            return new() { Stage = await player.UpdateStageAsync(request.Stage) };
+            return new() { ErrorCode = await player.UpdateStageAsync(request.Stage) };
         }
 
         async public override Task<ChatResponse> Chat(ChatRequest request, ServerCallContext context)
         {
-            var (name, regionIndex) = await GetContextName(context);
+            var (accountGuid, playerGuid, playerName, regionIndex) = await GetContextName(context);
             var roomStream = _clusterClient
                 .GetStreamProvider(Server.Program.s_streamProviderName)
                 .GetStream<StreamServerEventsResponse>(Guid.Empty, PlayerGrain.GetRegionQueueStreamNamespace(regionIndex));
@@ -131,22 +205,25 @@ namespace Server
             {
                 OnChat = new()
                 {
-                    RoomInfo = $"chatroom{regionIndex}",
-                    OtherPlayer = name,
+                    RegionIndex = regionIndex,
+                    OtherPlayer = playerName,
                     Message = request.Message
                 }
             };
             await roomStream.OnNextAsync(grpcStreamResponse);
-            return new() { Success = true };
+            return new() { ErrorCode = ErrorCode.Success };
         }
 
         async public override Task<PlayerDataList> GetRegionPlayerDataList(Empty request, ServerCallContext context)
         {
             PlayerDataList ret = new PlayerDataList();
-            var (name, _) = await GetContextName(context);
-            foreach (var regionIndex in Program.s_regionList)
+            var (accountGuid, _,_, _) = await GetContextName(context);
+            var playerDataListGrain = _clusterClient.GetGrain<IPlayerDataListGrain>(accountGuid);
+            var playerListData = await playerDataListGrain.GetPlayerGuidListDataAsync();
+
+            foreach (var playerGuid in playerListData)
             {
-                var player = _clusterClient.GetGrain<IPlayerGrain>(regionIndex, name);
+                var player = _clusterClient.GetGrain<IPlayerGrain>(playerGuid.Player);
                 ret.PlayerDataList_.Add( await player.GetPlayerDataAsync());
             }
             return ret;
@@ -154,7 +231,11 @@ namespace Server
 
         async public override Task<RankList> GetTopRankList(Empty request, ServerCallContext context)
         {
-            var (name, regionIndex) = await GetContextName(context);
+            var (_, _, _, regionIndex) = await GetContextName(context);
+            if(regionIndex == default)
+            {
+                return default;
+            }
             var rankingGrain = _clusterClient.GetGrain<IStageRankingGrain>(regionIndex);
             var topRanks = await rankingGrain.GetTopRanks();
             var ret = new RankList();

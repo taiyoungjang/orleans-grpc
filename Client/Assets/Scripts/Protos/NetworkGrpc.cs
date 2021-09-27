@@ -13,11 +13,13 @@ namespace game {
     static readonly string __ServiceName = "playerNetwork.PlayerNetwork";
 
     static readonly grpc::Marshaller<global::game.AuthRequest> __Marshaller_playerNetwork_AuthRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.AuthRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::game.UUID> __Marshaller_playerNetwork_UUID = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.UUID.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::game.AuthResponse> __Marshaller_playerNetwork_AuthResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.AuthResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::Google.Protobuf.WellKnownTypes.Empty> __Marshaller_google_protobuf_Empty = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::Google.Protobuf.WellKnownTypes.Empty.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.PlayerDataList> __Marshaller_playerNetwork_PlayerDataList = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.PlayerDataList.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.RegionData> __Marshaller_playerNetwork_RegionData = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.RegionData.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.PlayerData> __Marshaller_playerNetwork_PlayerData = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.PlayerData.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::game.CreatePlayerRequest> __Marshaller_playerNetwork_CreatePlayerRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.CreatePlayerRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::game.CreatePlayerResponse> __Marshaller_playerNetwork_CreatePlayerResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.CreatePlayerResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.UpdateStageRequest> __Marshaller_playerNetwork_UpdateStageRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.UpdateStageRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.UpdateStageResponse> __Marshaller_playerNetwork_UpdateStageResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.UpdateStageResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.StreamServerEventsResponse> __Marshaller_playerNetwork_StreamServerEventsResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.StreamServerEventsResponse.Parser.ParseFrom);
@@ -25,12 +27,12 @@ namespace game {
     static readonly grpc::Marshaller<global::game.ChatResponse> __Marshaller_playerNetwork_ChatResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.ChatResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::game.RankList> __Marshaller_playerNetwork_RankList = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::game.RankList.Parser.ParseFrom);
 
-    static readonly grpc::Method<global::game.AuthRequest, global::game.UUID> __Method_GetAuth = new grpc::Method<global::game.AuthRequest, global::game.UUID>(
+    static readonly grpc::Method<global::game.AuthRequest, global::game.AuthResponse> __Method_GetAuth = new grpc::Method<global::game.AuthRequest, global::game.AuthResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetAuth",
         __Marshaller_playerNetwork_AuthRequest,
-        __Marshaller_playerNetwork_UUID);
+        __Marshaller_playerNetwork_AuthResponse);
 
     static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.PlayerDataList> __Method_GetRegionPlayerDataList = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::game.PlayerDataList>(
         grpc::MethodType.Unary,
@@ -45,6 +47,13 @@ namespace game {
         "LoginPlayerData",
         __Marshaller_playerNetwork_RegionData,
         __Marshaller_playerNetwork_PlayerData);
+
+    static readonly grpc::Method<global::game.CreatePlayerRequest, global::game.CreatePlayerResponse> __Method_CreatePlayer = new grpc::Method<global::game.CreatePlayerRequest, global::game.CreatePlayerResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "CreatePlayer",
+        __Marshaller_playerNetwork_CreatePlayerRequest,
+        __Marshaller_playerNetwork_CreatePlayerResponse);
 
     static readonly grpc::Method<global::game.UpdateStageRequest, global::game.UpdateStageResponse> __Method_UpdateStage = new grpc::Method<global::game.UpdateStageRequest, global::game.UpdateStageResponse>(
         grpc::MethodType.Unary,
@@ -103,19 +112,19 @@ namespace game {
       {
       }
 
-      public virtual global::game.UUID GetAuth(global::game.AuthRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual global::game.AuthResponse GetAuth(global::game.AuthRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return GetAuth(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::game.UUID GetAuth(global::game.AuthRequest request, grpc::CallOptions options)
+      public virtual global::game.AuthResponse GetAuth(global::game.AuthRequest request, grpc::CallOptions options)
       {
         return CallInvoker.BlockingUnaryCall(__Method_GetAuth, null, options, request);
       }
-      public virtual grpc::AsyncUnaryCall<global::game.UUID> GetAuthAsync(global::game.AuthRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncUnaryCall<global::game.AuthResponse> GetAuthAsync(global::game.AuthRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return GetAuthAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncUnaryCall<global::game.UUID> GetAuthAsync(global::game.AuthRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncUnaryCall<global::game.AuthResponse> GetAuthAsync(global::game.AuthRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetAuth, null, options, request);
       }
@@ -150,6 +159,22 @@ namespace game {
       public virtual grpc::AsyncUnaryCall<global::game.PlayerData> LoginPlayerDataAsync(global::game.RegionData request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_LoginPlayerData, null, options, request);
+      }
+      public virtual global::game.CreatePlayerResponse CreatePlayer(global::game.CreatePlayerRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return CreatePlayer(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::game.CreatePlayerResponse CreatePlayer(global::game.CreatePlayerRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_CreatePlayer, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::game.CreatePlayerResponse> CreatePlayerAsync(global::game.CreatePlayerRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return CreatePlayerAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::game.CreatePlayerResponse> CreatePlayerAsync(global::game.CreatePlayerRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_CreatePlayer, null, options, request);
       }
       public virtual global::game.UpdateStageResponse UpdateStage(global::game.UpdateStageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {

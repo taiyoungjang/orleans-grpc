@@ -36,11 +36,11 @@ public class StageUpdateRankingGrain : Orleans.Grain, IStageUpdateRankingGrain
         return base.OnActivateAsync();
     }
 
-    async ValueTask<bool> IStageUpdateRankingGrain.UpdateStageAsync(string name, int stage)
+    async ValueTask<game.ErrorCode> IStageUpdateRankingGrain.UpdateStageAsync(string name, int stage)
     {
         if(string.IsNullOrEmpty(name))
         {
-            return false;
+            return game.ErrorCode.Failure;
         }
         bool bFound = false;
         var ranks = _state.State.Ranks;
@@ -51,7 +51,7 @@ public class StageUpdateRankingGrain : Orleans.Grain, IStageUpdateRankingGrain
                 bFound = true;
                 ranks[i].Stage = stage;
                 ranks[i].UpdateDate = Timestamp.FromDateTime(System.DateTime.UtcNow);
-            break;
+                break;
             }
         }
         if(!bFound)
@@ -59,7 +59,7 @@ public class StageUpdateRankingGrain : Orleans.Grain, IStageUpdateRankingGrain
             ranks.Add(new RankData() { Name = name, Stage = stage, Rank = long.MaxValue, UpdateDate = Timestamp.FromDateTime(System.DateTime.UtcNow) });
         }
         await _state.WriteStateAsync();
-        return true;
+        return ErrorCode.Success;
     }
 
 }

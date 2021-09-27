@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using Orleans;
 public interface IStageUpdateRankingGrain : IGrainWithIntegerKey
 {
-    ValueTask<bool> UpdateStageAsync(string name, int stage);
+    ValueTask<game.ErrorCode> UpdateStageAsync(string name, int stage);
 
     ValueTask<ImmutableList<game.RankData>> GetAllDataAsync();
 }

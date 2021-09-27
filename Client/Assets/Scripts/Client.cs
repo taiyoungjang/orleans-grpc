@@ -9,15 +9,16 @@ public class NetworkClient
     public static global::Google.Protobuf.WellKnownTypes.Empty s_empty = new global::Google.Protobuf.WellKnownTypes.Empty();
 
     private game.PlayerNetwork.PlayerNetworkClient _playerNetworkClient;
+    private string _firebaseId;
     private string _name;
     private long _regionIndex;
     private System.Threading.CancellationToken _token;
-    private Metadata.Entry _bearer;
     private Metadata.Entry _regionMeta;
+    private Metadata.Entry _otpMeta;
     private Grpc.Core.Channel _channel;
     private game.PlayerData _playerData;
 
-    public NetworkClient(string host, int port, string name, long regionIndex, System.Threading.CancellationToken token)
+    public NetworkClient(string host, int port, string firebaseId, string name, long regionIndex, System.Threading.CancellationToken token)
     {
         _regionIndex = regionIndex;
         var credentials = CallCredentials.FromInterceptor(AsyncAuthInterceptor);
@@ -27,24 +28,24 @@ public class NetworkClient
         //GrpcChannelOptions grpcChannelOptions = new GrpcChannelOptions() { Credentials = new };
         _channel = new Grpc.Core.Channel(host: host, port: port, credentials: ChannelCredentials.Create(new SslCredentials(), credentials));
         _playerNetworkClient = new game.PlayerNetwork.PlayerNetworkClient(_channel);
+        _firebaseId = firebaseId;
         _name = name;
         _token = token;
-        _bearer = null;
         _regionMeta = new Metadata.Entry("region", _regionIndex.ToString());
     }
-    private void SetBearer(Guid guid)
+    private void SetOtp(Guid otp)
     {
-        if (_bearer == null)
+        if (_otpMeta == null)
         {
-            _bearer = new Metadata.Entry("authorization", guid.ToString());
+            _otpMeta = new Metadata.Entry("otp", otp.ToString());
         }
     }
 
     private Task AsyncAuthInterceptor(AuthInterceptorContext context, Metadata metadata)
     {
-        if (_bearer != null)
+        if (_otpMeta != null)
         {
-            metadata.Add(_bearer);
+            metadata.Add(_otpMeta);
         }
         if (_regionMeta != null)
         {
@@ -54,11 +55,16 @@ public class NetworkClient
     }
     async public Task TestTask()
     {
-        var uuid = await _playerNetworkClient.GetAuthAsync(new AuthRequest() { Name = _name });
-        var guid = new Guid(uuid.Value.ToByteArray());
-        SetBearer(guid);
+        AuthResponse authResponse = await _playerNetworkClient.GetAuthAsync(new AuthRequest() { FirebaseId = _firebaseId });
+        var otp = new Guid(authResponse.Otp.Value.ToByteArray());
+        SetOtp(otp);
         var getPlayerDataList = await _playerNetworkClient.GetRegionPlayerDataListAsync(s_empty);
         System.Console.WriteLine($"GetRegionPlayerDataListAsync: getPlayerDataList.Count:{getPlayerDataList.PlayerDataList_.Count}");
+        if (!getPlayerDataList.PlayerDataList_.Any(t => t.RegionIndex == _regionIndex))
+        {
+            var createPlayerAsyncResult = await _playerNetworkClient.CreatePlayerAsync(new CreatePlayerRequest() { RegionIndex = _regionIndex, Name = _name });
+            System.Console.WriteLine($"name:{_name} createPlayerAsyncResult:{createPlayerAsyncResult.ErrorCode}");
+        }
 
         _playerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
         System.Console.WriteLine($"LoginPlayerData: Stage:{_playerData.Stage}");
@@ -71,7 +77,7 @@ public class NetworkClient
             switch (current.ActionCase)
             {
                 case StreamServerEventsResponse.ActionOneofCase.OnChat:
-                    UnityEngine.Debug.Log($"OnChat Room:{current.OnChat.RoomInfo} player:{current.OnChat.OtherPlayer} message:{current.OnChat.Message}");
+                    UnityEngine.Debug.Log($"OnChat RegionIndex:{current.OnChat.RegionIndex} player:{current.OnChat.OtherPlayer} message:{current.OnChat.Message}");
                     break;
                 case StreamServerEventsResponse.ActionOneofCase.OnClosed:
                     UnityEngine.Debug.Log($"OnClosed Reason:{current.OnClosed.Reason} ");
@@ -89,7 +95,7 @@ public class NetworkClient
             int addStage = random.Next(1, 4);
             _playerData.Stage += addStage;
             var updateStageAsync = await _playerNetworkClient.UpdateStageAsync(new UpdateStageRequest() { Stage = _playerData.Stage });
-            System.Console.WriteLine($"UpdateStageAsync: addStage:{addStage} Stage:{updateStageAsync.Stage}");
+            System.Console.WriteLine($"UpdateStageAsync: addStage:{addStage} ErrorCode:{updateStageAsync.ErrorCode}");
 
             if (random.Next(0, 1) == 0)
             {

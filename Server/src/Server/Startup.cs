@@ -25,12 +25,12 @@ namespace Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddStackExchangeRedisCache(options => 
-            {
-                var redisAddress = $"{Environment.GetEnvironmentVariable("REDIS")}:6379";
-                options.Configuration = redisAddress;
-                options.InstanceName = "Session";
-            });
+            //services.AddStackExchangeRedisCache(options => 
+            //{
+            //    var redisAddress = $"{Environment.GetEnvironmentVariable("REDIS")}:6379";
+            //    options.Configuration = redisAddress;
+            //    options.InstanceName = "Session";
+            //});
             services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
             .AddCertificate(options =>
             {

@@ -69,7 +69,27 @@ namespace Server
 
                     //var redisAddress = $"{Environment.GetEnvironmentVariable("REDIS")}:6379";
                     //siloBuilder.AddRedisGrainStorage("player", options => options.ConnectionString = redisAddress);
+                    siloBuilder.AddAzureBlobGrainStorage("auth", options =>
+                    {
+                        options.UseJson = true;
+                        options.ConnectionString = connectionString;
+                    });
+                    siloBuilder.AddAzureBlobGrainStorage("otp", options =>
+                    {
+                        options.UseJson = true;
+                        options.ConnectionString = connectionString;
+                    });
+                    siloBuilder.AddAzureBlobGrainStorage("uniquename", options =>
+                    {
+                        options.UseJson = true;
+                        options.ConnectionString = connectionString;
+                    });
                     siloBuilder.AddAzureBlobGrainStorage("player", options =>
+                    {
+                        options.UseJson = true;
+                        options.ConnectionString = connectionString;
+                    });
+                    siloBuilder.AddAzureBlobGrainStorage("playerguidlist", options =>
                     {
                         options.UseJson = true;
                         options.ConnectionString = connectionString;

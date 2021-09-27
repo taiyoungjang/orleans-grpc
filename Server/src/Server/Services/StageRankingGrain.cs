@@ -39,7 +39,7 @@ public class StageRankingGrain : Orleans.Grain, IStageRankingGrain, IRemindable
 
     async public ValueTask CheckAsync()
     {
-        await this.RegisterOrUpdateReminder("stagerank", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+        await this.RegisterOrUpdateReminder("stagerank", dueTime: TimeSpan.FromMinutes(1), period: TimeSpan.FromMinutes(1));
     }
 
     async public Task ReceiveReminder(string reminderName, TickStatus status)
