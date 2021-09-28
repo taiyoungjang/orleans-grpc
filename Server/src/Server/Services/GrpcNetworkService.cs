@@ -247,5 +247,28 @@ namespace Server
             ret.MyRank = ranks.myRank;
             return ret;
         }
+        async public override Task<GetMailResponse> GetMail(Empty request, ServerCallContext context)
+        {
+            var (playerGrain, playerName, regionIndex) = await GetPlayerWithRegionIndex(context);
+            if (regionIndex == default)
+            {
+                return default;
+            }
+            var ret = new GetMailResponse();
+            ret.ErrorCode = ErrorCode.Success;
+            ret.Mails = await playerGrain.GetMailsAsync();
+            return ret;
+        }
+        async public override Task<DeleteMailResponse> DeleteMail(game.DeleteMailRequest request, ServerCallContext context)
+        {
+            var (playerGrain, playerName, regionIndex) = await GetPlayerWithRegionIndex(context);
+            if (regionIndex == default)
+            {
+                return default;
+            }
+            var ret = new DeleteMailResponse();
+            ret.ErrorCode = await playerGrain.DeleteMailAsync(request.Uuid);
+            return ret;
+        }
     }
 }

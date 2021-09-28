@@ -30,7 +30,10 @@ public class AuthGrain : Orleans.Grain, IAuthGrain
         Guid accountGuid = _state.State.AccountGuid;
         if(accountGuid.Equals(System.Guid.Empty))
         {
-            _state.State = new() { FirebaseId = this.GrainReference.GrainIdentity.PrimaryKeyString, AccountGuid = System.Guid.NewGuid() };
+            _state.State = new() { 
+                FirebaseId = this.GrainReference.GrainIdentity.PrimaryKeyString, 
+                AccountGuid = System.Guid.NewGuid() 
+            };
             await this._state.WriteStateAsync();
         }
         return _state.State;
@@ -43,7 +46,11 @@ public class AuthGrain : Orleans.Grain, IAuthGrain
             return default;
         }
         Guid accountGuid = _state.State.AccountGuid;
-        _state.State = new() { FirebaseId = this.GrainReference.GrainIdentity.PrimaryKeyString, AccountGuid = System.Guid.NewGuid() };
+        _state.State = new() 
+        { 
+            FirebaseId = this.GrainReference.GrainIdentity.PrimaryKeyString, 
+            AccountGuid = System.Guid.NewGuid() 
+        };
         await this._state.WriteStateAsync();
         return _state.State;
     }
