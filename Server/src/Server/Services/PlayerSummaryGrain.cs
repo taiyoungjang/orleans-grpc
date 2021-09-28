@@ -12,9 +12,9 @@ using Orleans.Runtime;
 public class PlayerSummaryGrain : Orleans.Grain, IPlayerSummaryGrain
 {
     private readonly ILogger<PlayerSummaryGrain> _logger;
-    private readonly IPersistentState<PlayerGuidListData> _state;
+    private readonly IPersistentState<PlayerSummaryData> _state;
     public PlayerSummaryGrain(
-        [PersistentState("playersummary", storageName: "playersummarystore")] IPersistentState<PlayerGuidListData> state,
+        [PersistentState("playersummary", storageName: "playersummarystore")] IPersistentState<PlayerSummaryData> state,
         ILogger<PlayerSummaryGrain> logger)
     {
         _state = state;
