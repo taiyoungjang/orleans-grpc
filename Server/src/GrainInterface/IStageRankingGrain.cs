@@ -8,5 +8,5 @@ using Orleans;
 public interface IStageRankingGrain : IGrainWithIntegerKey
 {
     ValueTask CheckAsync();
-    ValueTask<ImmutableList<game.RankData>> GetTopRanks();
+    ValueTask<(game.RanksMap topRanks, game.RankData myRank)> GetTopRanks(string withPlayerName);
 }

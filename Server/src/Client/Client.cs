@@ -75,6 +75,7 @@ namespace Client
             _playerData = await _playerNetworkClient.LoginPlayerDataAsync(new RegionData() { RegionIndex = _regionIndex });
             System.Console.WriteLine($"LoginPlayerData: Stage:{_playerData.Stage}");
 
+
             System.Console.WriteLine($"player:{_name} otp:{otp}");
             _ = Task.Run(() => CallRpcTask());
             var responseStream = _playerNetworkClient.ServerStreamServerEvents(s_empty).ResponseStream;
@@ -89,6 +90,16 @@ namespace Client
                     case StreamServerEventsResponse.ActionOneofCase.OnClosed:
                         System.Console.WriteLine($"OnClosed Reason:{current.OnClosed.Reason} ");
                         break;
+                    case StreamServerEventsResponse.ActionOneofCase.OnUpdateRanking:
+                        {
+                            var rankings = await _playerNetworkClient.GetTopRankListAsync(s_empty);
+                            foreach (var pair in rankings.TopRanks)
+                            {
+                                System.Console.WriteLine($"rank:{pair.Value.Rank} name:{pair.Key} Value:{pair.Value.Value}");
+                            }
+                            System.Console.WriteLine($"myRank rank:{rankings.MyRank.Rank} Value:{rankings.MyRank.Value}");
+                        }
+                        break;
                 }
             }
             System.Console.WriteLine($"done.");
@@ -99,26 +110,38 @@ namespace Client
         {
             await Task.Delay(TimeSpan.FromSeconds(1));
             var random = new System.Random();
-            do
+            try
             {
-                int addStage = random.Next(1, 4);
-                _playerData.Stage += addStage;
-                var updateStageAsync = await _playerNetworkClient.UpdateStageAsync(new() { Stage = _playerData.Stage });
-                System.Console.WriteLine($"UpdateStageAsync: addStage:{addStage} ErrorCode:{updateStageAsync.ErrorCode}");
+                do
+                {
+                    int addStage = random.Next(1, 4);
+                    _playerData.Stage += addStage;
+                    var updateStageAsync = await _playerNetworkClient.UpdateStageAsync(new() { Stage = _playerData.Stage });
+                    System.Console.WriteLine($"UpdateStageAsync: addStage:{addStage} ErrorCode:{updateStageAsync.ErrorCode}");
 
-                if(random.Next(0,1) == 0)
-                {
-                    string message = $"blah-{Guid.NewGuid()}";
-                    System.Console.WriteLine($"ChatAsync: message:{message}");
-                    await _playerNetworkClient.ChatAsync(new() { Message = message });
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                }
-                var rankings = await _playerNetworkClient.GetTopRankListAsync(s_empty);
-                foreach(var rank in rankings.Ranks)
-                {
-                    System.Console.WriteLine($"rank:{rank.Rank} name:{rank.Name} Stage:{rank.Stage}");
-                }
-            } while (true);
+                    if (random.Next(0, 1) == 0)
+                    {
+                        string message = $"blah-{Guid.NewGuid()}";
+                        System.Console.WriteLine($"ChatAsync: message:{message}");
+                        await _playerNetworkClient.ChatAsync(new() { Message = message });
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                    }
+
+                    var mails = await _playerNetworkClient.GetMailAsync(s_empty);
+                    System.Console.WriteLine($"GetMailAsync: Count:{mails.Mails.Mails.Count}");
+                    if (mails.Mails.Mails.Count > 0)
+                    {
+                        var first = mails.Mails.Mails.First().Value.Uuid;
+                        var DeleteMailAsyncResult = await _playerNetworkClient.DeleteMailAsync(new DeleteMailRequest() { Uuid = first });
+                        System.Console.WriteLine($"DeleteMailAsync: {DeleteMailAsyncResult.ErrorCode}");
+                    }
+
+                } while (true);
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.Message);
+            }
         }
     }
 }

@@ -9,13 +9,12 @@ using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 using Orleans.Runtime;
 
-[StorageProvider(ProviderName = "auth")]
 public class AuthGrain : Orleans.Grain, IAuthGrain
 {
     private readonly ILogger<AuthGrain> _logger;
     private readonly IPersistentState<AuthData> _state;
     public AuthGrain(
-        [PersistentState("auth", storageName: "auth")] IPersistentState<AuthData> state,
+        [PersistentState("auth", storageName: "authstore")] IPersistentState<AuthData> state,
         ILogger<AuthGrain> logger)
     {
         _state = state;

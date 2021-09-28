@@ -11,15 +11,14 @@ using Orleans.Providers;
 using Orleans.Runtime;
 using Google.Protobuf.WellKnownTypes;
 
-[StorageProvider(ProviderName = "stageupdaterank")]
 public class StageUpdateRankingGrain : Orleans.Grain, IStageUpdateRankingGrain
 {
     private readonly ILogger<StageUpdateRankingGrain> _logger;
 
-    private readonly IPersistentState<RankList> _state;
-
+    private readonly IPersistentState<Dictionary<string,RankData>> _state;
+    private RankType _rankType = RankType.Stage;
     public StageUpdateRankingGrain(
-        [PersistentState("stageupdaterank", storageName: "stageupdaterank")] IPersistentState<RankList> state,
+        [PersistentState("stageupdaterank", storageName: "stageupdaterankstore")] IPersistentState<Dictionary<string, RankData>> state,
         ILogger<StageUpdateRankingGrain> logger)
     {
         _state = state;
@@ -28,7 +27,7 @@ public class StageUpdateRankingGrain : Orleans.Grain, IStageUpdateRankingGrain
 
     public ValueTask<ImmutableList<RankData>> GetAllDataAsync()
     {
-        return ValueTask.FromResult(_state.State.Ranks.Select( t => t.Clone() ).ToImmutableList());
+        return ValueTask.FromResult(_state.State.Values.Select( t => t.Clone() ).ToImmutableList());
     }
 
     public override Task OnActivateAsync()
@@ -36,27 +35,28 @@ public class StageUpdateRankingGrain : Orleans.Grain, IStageUpdateRankingGrain
         return base.OnActivateAsync();
     }
 
-    async ValueTask<game.ErrorCode> IStageUpdateRankingGrain.UpdateStageAsync(string name, int stage)
+    async ValueTask<game.ErrorCode> IStageUpdateRankingGrain.UpdateAsync(string name, Guid playerGuid, long value)
     {
         if(string.IsNullOrEmpty(name))
         {
             return game.ErrorCode.Failure;
         }
-        bool bFound = false;
-        var ranks = _state.State.Ranks;
-        for (int i=0;i< ranks.Count;++i)
+        if(!_state.State.TryGetValue(name, out RankData rank))
         {
-            if (ranks[i].Name.Equals(name))
+            rank = new RankData() 
             {
-                bFound = true;
-                ranks[i].Stage = stage;
-                ranks[i].UpdateDate = Timestamp.FromDateTime(System.DateTime.UtcNow);
-                break;
-            }
+                RankType = _rankType,
+                Name = name, Value = value, 
+                Rank = long.MaxValue, 
+                UpdateDate = Timestamp.FromDateTime(System.DateTime.UtcNow) ,
+                PlayerGuid = playerGuid.ToString()
+            };
+            _state.State.Add(name,rank);
         }
-        if(!bFound)
+        else
         {
-            ranks.Add(new RankData() { Name = name, Stage = stage, Rank = long.MaxValue, UpdateDate = Timestamp.FromDateTime(System.DateTime.UtcNow) });
+            rank.Value = value;
+            rank.UpdateDate = Timestamp.FromDateTime(System.DateTime.UtcNow);
         }
         await _state.WriteStateAsync();
         return ErrorCode.Success;

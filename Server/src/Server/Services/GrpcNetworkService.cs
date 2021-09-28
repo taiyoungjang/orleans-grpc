@@ -87,35 +87,29 @@ namespace Server
             otpData = await otpGrain.GetOtpAsync();
             return (otpData.AccountGuid, otpData.PlayerGuid, otpData.PlayerName, regionIndex);
         }
-        async private Task<IPlayerGrain> GetPlayer(ServerCallContext context)
+        async private Task<(IPlayerGrain playerGrain, string playerName, long regionIndex)> GetPlayerWithRegionIndex(ServerCallContext context)
         {
-            var (accountGuid, playerGuid, _, _) = await GetContextName(context);
+            var (accountGuid, playerGuid, playerName, regionIndex) = await GetContextName(context);
             if (accountGuid.Equals(System.Guid.Empty))
             {
-                return null;
+                return (null,string.Empty, default);
             }
-            return _clusterClient.GetGrain<IPlayerGrain>(playerGuid);
+            return (_clusterClient.GetGrain<IPlayerGrain>(playerGuid), playerName, regionIndex);
         }
 
         async public override Task ServerStreamServerEvents(global::Google.Protobuf.WellKnownTypes.Empty empty, IServerStreamWriter<StreamServerEventsResponse> responseStreamWriter, ServerCallContext context)
         {
-            string strGuid = context.RequestHeaders.Get(s_otp).Value;
-            long regionIndex = 0;
-            if (!long.TryParse(context.RequestHeaders.Get(s_region).Value, out regionIndex))
-            {
-                _logger.LogError("");
-
-            }
-            var player = await GetPlayer(context);
+            string otp = context.RequestHeaders.Get(s_otp).Value;
+            var (player,playerName,regionIndex) = await GetPlayerWithRegionIndex(context);
             if (player is null)
             {
                 return;
             }
-            Guid guid = Guid.Empty;
+            Guid regionGuid = PlayerGrain.GetRegionGuid(regionIndex);
             var regionStream = _clusterClient
                 .GetStreamProvider(Server.Program.s_streamProviderName)
-                .GetStream<StreamServerEventsResponse>(guid, PlayerGrain.GetRegionQueueStreamNamespace(regionIndex));
-            var streamObserver = new RegionStreamObserver(guid, responseStreamWriter, regionStream, context.CancellationToken);
+                .GetStream<StreamServerEventsResponse>(regionGuid, PlayerGrain.RegionQueueStreamNamespace);
+            var streamObserver = new RegionStreamObserver(regionGuid, responseStreamWriter, regionStream, context.CancellationToken);
 
             try
             {
@@ -125,16 +119,17 @@ namespace Server
             {
 
             }
-
+            var otpGrain = _clusterClient.GetGrain<IOtpGrain>(System.Guid.Parse(otp));
+            await otpGrain.ClearAsync();
         }
 
         async public override Task<PlayerData> LoginPlayerData(RegionData request, ServerCallContext context)
         {
             var (accountGuid, playerGuid, _, regionIndex) = await GetContextName(context);
-            var playerDataListGrain = _clusterClient.GetGrain<IPlayerDataListGrain>(accountGuid);
-            var playerListData = await playerDataListGrain.GetPlayerGuidListDataAsync();
+            var playerDataListGrain = _clusterClient.GetGrain<IPlayerSummaryGrain>(accountGuid);
+            var playerListData = await playerDataListGrain.GetPlayerSummaryAsync();
             var playerGuidWithRegionIndex = playerListData.FirstOrDefault(t => t.RegionIndex == t.RegionIndex);
-            if(playerGuidWithRegionIndex.Equals(default(PlayerGuid)))
+            if(playerGuidWithRegionIndex.Equals(default(PlayerSummary)))
             {
                 return default;
             }
@@ -152,8 +147,8 @@ namespace Server
         async public override Task<CreatePlayerResponse> CreatePlayer(CreatePlayerRequest request, ServerCallContext context)
         {
             var (accountGuid, playerGuid,_, regionIndex) = await GetContextName(context);
-            var playerDataListGrain = _clusterClient.GetGrain<IPlayerDataListGrain>(accountGuid);
-            var playerListData = await playerDataListGrain.GetPlayerGuidListDataAsync();
+            var playerDataListGrain = _clusterClient.GetGrain<IPlayerSummaryGrain>(accountGuid);
+            var playerListData = await playerDataListGrain.GetPlayerSummaryAsync();
             if (playerListData.Any(t=> t.RegionIndex == request.RegionIndex))
             {
                 return new CreatePlayerResponse() { ErrorCode = ErrorCode.AlreadyCreatedCharacter };
@@ -162,7 +157,7 @@ namespace Server
             regionIndex = request.RegionIndex;
             var uniqueNameGrain = _clusterClient.GetGrain<IUniqueNameGrain>(regionIndex);
             {
-                var result = await uniqueNameGrain.SetPlayerName(request.Name, playerGuid);
+                var result = await uniqueNameGrain.SetPlayerNameAsync(request.Name, playerGuid);
                 if (result != ErrorCode.Success)
                 {
                     return new() { ErrorCode = result };
@@ -182,12 +177,16 @@ namespace Server
             {
                 return new CreatePlayerResponse();
             }
-            await playerDataListGrain.SetPlayerListData(request.RegionIndex, playerGuid, playerName: request.Name);
+            await playerDataListGrain.SetPlayerSummaryData(request.RegionIndex, playerGuid, playerName: request.Name);
             return new CreatePlayerResponse() { ErrorCode =  ErrorCode.Success };
         }
         async public override Task<UpdateStageResponse> UpdateStage(UpdateStageRequest request, ServerCallContext context)
         {
-            var player = await GetPlayer(context);
+            var (player, playerName, regionIndex) = await GetPlayerWithRegionIndex(context);
+            if (regionIndex == default)
+            {
+                return default;
+            }
             if (player is null)
             {
                 return default;
@@ -197,10 +196,15 @@ namespace Server
 
         async public override Task<ChatResponse> Chat(ChatRequest request, ServerCallContext context)
         {
-            var (accountGuid, playerGuid, playerName, regionIndex) = await GetContextName(context);
-            var roomStream = _clusterClient
+            var (_, _, playerName, regionIndex) = await GetContextName(context);
+            if (regionIndex == default)
+            {
+                return default;
+            }
+            Guid regionGuid = PlayerGrain.GetRegionGuid(regionIndex);
+            var regionStream = _clusterClient
                 .GetStreamProvider(Server.Program.s_streamProviderName)
-                .GetStream<StreamServerEventsResponse>(Guid.Empty, PlayerGrain.GetRegionQueueStreamNamespace(regionIndex));
+                .GetStream<StreamServerEventsResponse>(regionGuid, PlayerGrain.RegionQueueStreamNamespace);
             StreamServerEventsResponse grpcStreamResponse = new()
             {
                 OnChat = new()
@@ -210,7 +214,7 @@ namespace Server
                     Message = request.Message
                 }
             };
-            await roomStream.OnNextAsync(grpcStreamResponse);
+            await regionStream.OnNextAsync(grpcStreamResponse);
             return new() { ErrorCode = ErrorCode.Success };
         }
 
@@ -218,8 +222,8 @@ namespace Server
         {
             PlayerDataList ret = new PlayerDataList();
             var (accountGuid, _,_, _) = await GetContextName(context);
-            var playerDataListGrain = _clusterClient.GetGrain<IPlayerDataListGrain>(accountGuid);
-            var playerListData = await playerDataListGrain.GetPlayerGuidListDataAsync();
+            var playerDataListGrain = _clusterClient.GetGrain<IPlayerSummaryGrain>(accountGuid);
+            var playerListData = await playerDataListGrain.GetPlayerSummaryAsync();
 
             foreach (var playerGuid in playerListData)
             {
@@ -229,17 +233,41 @@ namespace Server
             return ret;
         }
 
-        async public override Task<RankList> GetTopRankList(Empty request, ServerCallContext context)
+        async public override Task<TopRankListResponse> GetTopRankList(Empty request, ServerCallContext context)
         {
-            var (_, _, _, regionIndex) = await GetContextName(context);
+            var (_, playerName, regionIndex) = await GetPlayerWithRegionIndex(context);
             if(regionIndex == default)
             {
                 return default;
             }
             var rankingGrain = _clusterClient.GetGrain<IStageRankingGrain>(regionIndex);
-            var topRanks = await rankingGrain.GetTopRanks();
-            var ret = new RankList();
-            ret.Ranks.AddRange(topRanks);
+            var ranks = await rankingGrain.GetTopRanks(playerName);
+            var ret = new TopRankListResponse() { ErrorCode = ErrorCode.Success};
+            ret.TopRanks.Add(ranks.topRanks.Ranks);
+            ret.MyRank = ranks.myRank;
+            return ret;
+        }
+        async public override Task<GetMailResponse> GetMail(Empty request, ServerCallContext context)
+        {
+            var (playerGrain, playerName, regionIndex) = await GetPlayerWithRegionIndex(context);
+            if (regionIndex == default)
+            {
+                return default;
+            }
+            var ret = new GetMailResponse();
+            ret.ErrorCode = ErrorCode.Success;
+            ret.Mails = await playerGrain.GetMailsAsync();
+            return ret;
+        }
+        async public override Task<DeleteMailResponse> DeleteMail(game.DeleteMailRequest request, ServerCallContext context)
+        {
+            var (playerGrain, playerName, regionIndex) = await GetPlayerWithRegionIndex(context);
+            if (regionIndex == default)
+            {
+                return default;
+            }
+            var ret = new DeleteMailResponse();
+            ret.ErrorCode = await playerGrain.DeleteMailAsync(request.Uuid);
             return ret;
         }
     }

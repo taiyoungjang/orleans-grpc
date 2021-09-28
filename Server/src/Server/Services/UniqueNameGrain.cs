@@ -9,20 +9,29 @@ using Microsoft.Extensions.Logging;
 using Orleans.Providers;
 using Orleans.Runtime;
 
-[StorageProvider(ProviderName = "uniquename")]
 public class UniqueNameGrain : Orleans.Grain, IUniqueNameGrain
 {
     private readonly ILogger<UniqueNameGrain> _logger;
     private readonly IPersistentState<Dictionary<string, Guid>> _state;
     public UniqueNameGrain(
-        [PersistentState("uniquename", storageName: "uniquename")] IPersistentState<Dictionary<string, Guid>> state,
+        [PersistentState("uniquename", storageName: "uniquenamestore")] IPersistentState<Dictionary<string, Guid>> state,
         ILogger<UniqueNameGrain> logger)
     {
         _state = state;
         _logger = logger;
     }
 
-    async ValueTask<ErrorCode> IUniqueNameGrain.SetPlayerName(string name, Guid playerGuid)
+    ValueTask<Guid> IUniqueNameGrain.GetPlayerNameAsync(string name)
+    {
+        Guid playerGuid = Guid.Empty;
+        if(_state.State.TryGetValue(name, out playerGuid))
+        {
+
+        }
+        return ValueTask.FromResult(playerGuid);
+    }
+
+    async ValueTask<ErrorCode> IUniqueNameGrain.SetPlayerNameAsync(string name, Guid playerGuid)
     {
         if(_state.State.TryAdd(name,playerGuid))
         {

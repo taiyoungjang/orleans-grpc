@@ -1,0 +1,24 @@
+
+syntax = "proto3";
+
+//import "google/protobuf/empty.proto";
+//import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "game";
+
+enum ErrorCode {
+    ErrorCode_Success = 0;
+    ErrorCode_Failure = 1;
+    ErrorCode_AlreadyCreatedCharacter = 2;
+    ErrorCode_AlreadyDefinedName = 3;
+}
+
+enum RankType {
+    RankType_None = 0;
+    RankType_Stage = 1;
+}
+enum RewardType {
+    RewardType_None = 0;
+    RewardType_Item = 1;
+    RewardType_Skill = 2;
+}

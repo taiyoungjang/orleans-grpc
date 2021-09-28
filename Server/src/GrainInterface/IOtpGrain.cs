@@ -7,6 +7,7 @@ using Orleans;
 public interface IOtpGrain : IGrainWithGuidKey
 {
     ValueTask<OtpData> GetOtpAsync();
+    ValueTask ClearAsync();
     ValueTask<OtpData> SetAccountGuidAsync(Guid accountGuid);
     ValueTask<OtpData> SetPlayerGuidAsync(long regionIndex, Guid playerGuid, string playerName);
 }

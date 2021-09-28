@@ -1,0 +1,17 @@
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "enum.proto";
+import "uuid.proto";
+
+option csharp_namespace = "game";
+
+message RankData{
+    RankType rankType = 1;
+    int64 rank = 2;
+    string name = 3;
+    int64 value = 4;
+	string playerGuid = 5;
+    google.protobuf.Timestamp updateDate = 6;
+}

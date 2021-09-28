@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="../../Common/Protos/*.proto" ProtoRoot="../../Common" OutputDir="../Assets/Scripts/Protos" CompileOutputs="false" GrpcServices="Client" />
+    <Protobuf Include="../../Common/Protos/*.proto" ProtoRoot="../../Common/Protos" OutputDir="../Assets/Scripts/Protos" CompileOutputs="false" GrpcServices="Client" />
   </ItemGroup>
 
   <ItemGroup>

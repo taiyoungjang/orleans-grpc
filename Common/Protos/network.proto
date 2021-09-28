@@ -2,8 +2,12 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/duration.proto";  
 import "google/protobuf/timestamp.proto";
+import "enum.proto";
+import "uuid.proto";
+import "player.proto";
+import "mail.proto";
+import "rank.proto";
 
 option csharp_namespace = "game";
 
@@ -17,45 +21,29 @@ service PlayerNetwork {
   rpc UpdateStage(UpdateStageRequest) returns(UpdateStageResponse);
   rpc ServerStreamServerEvents (google.protobuf.Empty) returns (stream StreamServerEventsResponse);
   rpc Chat(ChatRequest) returns (ChatResponse);
-  rpc GetTopRankList(google.protobuf.Empty) returns (RankList);
-}
-
-enum ErrorCode {
-    Success = 0;
-    Failure = 1;
-    AlreadyCreatedCharacter = 2;
-    AlreadyDefinedName = 3;
-}
-
-message UUID{
-  bytes value = 1;
+  rpc GetTopRankList(google.protobuf.Empty) returns (TopRankListResponse);
+  rpc GetMail(google.protobuf.Empty) returns (GetMailResponse);
+  rpc DeleteMail(DeleteMailRequest) returns (DeleteMailResponse);
 }
 
 message RegionData{
     int64 regionIndex = 1;
 }
 
-message PlayerData{
-    int64 regionIndex = 1;
-    string name = 2;
-    int32 stage = 3;
+
+message RanksMap{
+    map<string,RankData> ranks = 1;
 }
 
-message RankData{
-    int64 regionIndex = 1;
-    int64 rank = 2;
-    string name = 3;
-    int32 stage = 4;
-    google.protobuf.Timestamp updateDate = 5;
-}
-
-message RankList{
-    google.protobuf.Timestamp updateDate = 1;
-    repeated RankData ranks = 2;
+message TopRankListResponse{
+    ErrorCode errorCode = 1;
+    google.protobuf.Timestamp updateDate = 2;
+    map<string,RankData> topRanks = 3;
+    RankData myRank = 4;
 }
 
 message ChatRoom{
-  int32 regionIndex = 1;
+  int64 regionIndex = 1;
 }
 
 message PlayerDataList{
@@ -76,7 +64,7 @@ message AuthResponse{
 }
 
 message UpdateStageRequest{
-  int32 stage = 1;
+  int64 stage = 1;
 }
 
 message UpdateStageResponse{
@@ -99,6 +87,19 @@ message ChatResponse{
   ErrorCode errorCode = 1;
 }
 
+message GetMailResponse {
+  ErrorCode errorCode = 1;
+  MailListData mails = 2;
+}
+
+message DeleteMailRequest {
+  UUID uuid = 1;
+}
+
+message DeleteMailResponse {
+  ErrorCode errorCode = 1;
+}
+
 message StreamServerEventsResponse {
   message OnChat{
     int64 regionIndex = 1;
@@ -108,9 +109,13 @@ message StreamServerEventsResponse {
   message OnClosed{
     string reason = 1;
   }
+  message OnUpdateRanking{
+    RankType rankType = 1;
+  }
   oneof action {
     OnChat onChat = 1;
     OnClosed onClosed = 2;
+    OnUpdateRanking onUpdateRanking = 3;
   }
 }
 

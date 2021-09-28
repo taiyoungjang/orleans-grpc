@@ -1,0 +1,26 @@
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+//import "google/protobuf/empty.proto";
+import "enum.proto";
+import "uuid.proto";
+
+option csharp_namespace = "game";
+
+message MailRewardData{
+    int32 id = 1;
+    RewardType type = 2;
+    int32 count = 3;
+}
+
+message MailData{
+    UUID uuid = 1;
+    string message = 2;
+    repeated MailRewardData rewards = 3;
+    google.protobuf.Timestamp sendDate = 4;
+}
+
+message MailListData{
+    map<string,MailData> mails = 1;
+}

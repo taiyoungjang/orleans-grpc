@@ -43,13 +43,12 @@ namespace Server
                           {
                               options.ConnectionString = connectionString;
                               options.QueueNames = new List<string>();
-                              options.QueueNames.Add(PlayerGrain.GetRegionQueueStreamNamespace(1));
-                              options.QueueNames.Add(PlayerGrain.GetRegionQueueStreamNamespace(2));
+                              options.QueueNames.Add(PlayerGrain.RegionQueueStreamNamespace);
                           }));
                         configurator.ConfigureCacheSize(1024);
                         configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
                         {
-                            options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(500);
+                            options.GetQueueMsgsTimerPeriod = TimeSpan.FromSeconds(1);
                         }));
                     });
                     siloBuilder.AddAzureBlobGrainStorage("PubSubStore", options =>
@@ -69,37 +68,42 @@ namespace Server
 
                     //var redisAddress = $"{Environment.GetEnvironmentVariable("REDIS")}:6379";
                     //siloBuilder.AddRedisGrainStorage("player", options => options.ConnectionString = redisAddress);
-                    siloBuilder.AddAzureBlobGrainStorage("auth", options =>
+                    siloBuilder.AddAzureBlobGrainStorage("authstore", options =>
                     {
                         options.UseJson = true;
                         options.ConnectionString = connectionString;
                     });
-                    siloBuilder.AddAzureBlobGrainStorage("otp", options =>
+                    siloBuilder.AddAzureBlobGrainStorage("otpstore", options =>
                     {
                         options.UseJson = true;
                         options.ConnectionString = connectionString;
                     });
-                    siloBuilder.AddAzureBlobGrainStorage("uniquename", options =>
+                    siloBuilder.AddAzureBlobGrainStorage("uniquenamestore", options =>
                     {
                         options.UseJson = true;
                         options.ConnectionString = connectionString;
                     });
-                    siloBuilder.AddAzureBlobGrainStorage("player", options =>
+                    siloBuilder.AddAzureBlobGrainStorage("playerstore", options =>
                     {
                         options.UseJson = true;
                         options.ConnectionString = connectionString;
                     });
-                    siloBuilder.AddAzureBlobGrainStorage("playerguidlist", options =>
+                    siloBuilder.AddAzureBlobGrainStorage("mailstore", options =>
                     {
                         options.UseJson = true;
                         options.ConnectionString = connectionString;
                     });
-                    siloBuilder.AddAzureBlobGrainStorage("stagerank", options =>
+                    siloBuilder.AddAzureBlobGrainStorage("playersummarystore", options =>
                     {
                         options.UseJson = true;
                         options.ConnectionString = connectionString;
                     });
-                    siloBuilder.AddAzureBlobGrainStorage("stageupdaterank", options =>
+                    siloBuilder.AddAzureBlobGrainStorage("stagerankstore", options =>
+                    {
+                        options.UseJson = true;
+                        options.ConnectionString = connectionString;
+                    });
+                    siloBuilder.AddAzureBlobGrainStorage("stageupdaterankstore", options =>
                     {
                         options.UseJson = true;
                         options.ConnectionString = connectionString;
@@ -108,7 +112,7 @@ namespace Server
                     {
                         options.ConnectionString = connectionString;
                     });
-                    //siloBuilder.AddAzureTableGrainStorage("PubSubStore", options =>
+                    //siloBuilder.AddAzureBlobGrainStorage("PubSubStore", options =>
                     //{
                     //    options.UseJson = true;
                     //    options.DeleteStateOnClear = true;

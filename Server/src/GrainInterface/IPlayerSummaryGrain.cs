@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Immutable;
 using Orleans;
-public interface IPlayerDataListGrain : IGrainWithGuidKey
+public interface IPlayerSummaryGrain : IGrainWithGuidKey
 {
-    ValueTask<List<PlayerGuid>> GetPlayerGuidListDataAsync();
-    ValueTask<game.ErrorCode> SetPlayerListData(long regionIndex, Guid playerGuid, string playerName);
+    ValueTask<List<PlayerSummary>> GetPlayerSummaryAsync();
+    ValueTask<game.ErrorCode> SetPlayerSummaryData(long regionIndex, Guid playerGuid, string playerName);
 }
 
-public struct PlayerGuid
+public struct PlayerSummary
 {
     public long RegionIndex { get; set; }
     public Guid Player { get; set; }

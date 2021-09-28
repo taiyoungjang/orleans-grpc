@@ -82,6 +82,16 @@ public class NetworkClient
                 case StreamServerEventsResponse.ActionOneofCase.OnClosed:
                     UnityEngine.Debug.Log($"OnClosed Reason:{current.OnClosed.Reason} ");
                     break;
+                case StreamServerEventsResponse.ActionOneofCase.OnUpdateRanking:
+                    {
+                        var rankings = await _playerNetworkClient.GetTopRankListAsync(s_empty);
+                        foreach (var pair in rankings.TopRanks)
+                        {
+                            UnityEngine.Debug.Log($"rank:{pair.Value.Rank} name:{pair.Key} Value:{pair.Value.Value}");
+                        }
+                        UnityEngine.Debug.Log($"myRank rank:{rankings.MyRank.Rank} Value:{rankings.MyRank.Value}");
+                    }
+                    break;
             }
         }
         UnityEngine.Debug.Log($"done.");
@@ -103,11 +113,6 @@ public class NetworkClient
                 UnityEngine.Debug.Log($"ChatAsync: message:{message}");
                 await _playerNetworkClient.ChatAsync(new ChatRequest() { Message = message });
                 await Task.Delay(TimeSpan.FromSeconds(1),_token);
-            }
-            var rankings = await _playerNetworkClient.GetTopRankListAsync(s_empty);
-            foreach (var rank in rankings.Ranks)
-            {
-                UnityEngine.Debug.Log($"rank:{rank.Rank} name:{rank.Name} Stage:{rank.Stage}");
             }
         } while (!_token.IsCancellationRequested);
     }
