@@ -6,6 +6,8 @@ syntax = "proto3";
 
 option csharp_namespace = "game";
 
+/// bytes는 PersistanceState에 넣으면 Serialization에러 남
+
 message UUID{
   bytes value = 1;
 }
