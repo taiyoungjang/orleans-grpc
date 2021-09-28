@@ -26,6 +26,4 @@ public class CheckRankHostedService : BackgroundService
             await rankingGrain.CheckAsync();
         }
     }
-
-
 }

@@ -21,17 +21,7 @@ public class UniqueNameGrain : Orleans.Grain, IUniqueNameGrain
         _logger = logger;
     }
 
-    ValueTask<Guid> IUniqueNameGrain.GetPlayerNameAsync(string name)
-    {
-        Guid playerGuid = Guid.Empty;
-        if(_state.State.TryGetValue(name, out playerGuid))
-        {
-
-        }
-        return ValueTask.FromResult(playerGuid);
-    }
-
-    async ValueTask<ErrorCode> IUniqueNameGrain.SetPlayerNameAsync(string name, Guid playerGuid)
+    async ValueTask<ErrorCode> IUniqueNameGrain.SetPlayerName(string name, Guid playerGuid)
     {
         if(_state.State.TryAdd(name,playerGuid))
         {

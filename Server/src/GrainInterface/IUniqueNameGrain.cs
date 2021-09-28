@@ -7,7 +7,6 @@ using System.Collections.Immutable;
 using Orleans;
 public interface IUniqueNameGrain : IGrainWithIntegerKey
 {
-    ValueTask<Guid> GetPlayerNameAsync(string name);
-    ValueTask<game.ErrorCode> SetPlayerNameAsync(string name, Guid playerGuid);
+    ValueTask<game.ErrorCode> SetPlayerName(string name, Guid playerGuid);
 }
 

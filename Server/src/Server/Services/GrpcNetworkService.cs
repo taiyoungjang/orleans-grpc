@@ -157,7 +157,7 @@ namespace Server
             regionIndex = request.RegionIndex;
             var uniqueNameGrain = _clusterClient.GetGrain<IUniqueNameGrain>(regionIndex);
             {
-                var result = await uniqueNameGrain.SetPlayerNameAsync(request.Name, playerGuid);
+                var result = await uniqueNameGrain.SetPlayerName(request.Name, playerGuid);
                 if (result != ErrorCode.Success)
                 {
                     return new() { ErrorCode = result };
@@ -245,29 +245,6 @@ namespace Server
             var ret = new TopRankListResponse() { ErrorCode = ErrorCode.Success};
             ret.TopRanks.Add(ranks.topRanks.Ranks);
             ret.MyRank = ranks.myRank;
-            return ret;
-        }
-        async public override Task<GetMailResponse> GetMail(Empty request, ServerCallContext context)
-        {
-            var (playerGrain, playerName, regionIndex) = await GetPlayerWithRegionIndex(context);
-            if (regionIndex == default)
-            {
-                return default;
-            }
-            var ret = new GetMailResponse();
-            ret.ErrorCode = ErrorCode.Success;
-            ret.Mails = await playerGrain.GetMailsAsync();
-            return ret;
-        }
-        async public override Task<DeleteMailResponse> DeleteMail(game.DeleteMailRequest request, ServerCallContext context)
-        {
-            var (playerGrain, playerName, regionIndex) = await GetPlayerWithRegionIndex(context);
-            if (regionIndex == default)
-            {
-                return default;
-            }
-            var ret = new DeleteMailResponse();
-            ret.ErrorCode = await playerGrain.DeleteMailAsync(request.Uuid);
             return ret;
         }
     }
